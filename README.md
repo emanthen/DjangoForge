@@ -2,7 +2,7 @@
 
 <br>
 
-<img src="https://raw.githubusercontent.com/emanthen/djangoforge/main/docs/assets/logo.svg" width="64" height="64" alt="DjangoForge Logo">
+<img src="https://raw.githubusercontent.com/emanthen/djangoforge/main/static/images/logo.png" width="64" height="64" alt="DjangoForge Logo">
 
 # DjangoForge
 
