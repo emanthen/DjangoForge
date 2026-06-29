@@ -2,7 +2,7 @@
 
 <br>
 
-<img src="https://raw.githubusercontent.com/emanthen/djangoforge/main/static/images/logo.png" width="300" height="300" alt="DjangoForge Logo">
+<img src="https://raw.githubusercontent.com/emanthen/DjangoForge/main/docs/assets/logo.svg" width="220" height="66" alt="DjangoForge Logo">
 
 # DjangoForge
 
@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-violet.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)](https://python.org)
 [![Django 5.2 LTS](https://img.shields.io/badge/Django-5.2%20LTS-0C4B33?logo=django&logoColor=white)](https://djangoproject.com)
-[![CI](https://github.com/emanthen/djangoforge/actions/workflows/ci.yml/badge.svg)](https://github.com/emanthen/djangoforge/actions)
+[![CI](https://github.com/emanthen/DjangoForge/actions/workflows/ci.yml/badge.svg)](https://github.com/emanthen/DjangoForge/actions)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://hub.docker.com)
 [![Terraform](https://img.shields.io/badge/Terraform-AWS%20ECS-7B42BC?logo=terraform&logoColor=white)](infra/terraform/)
 
@@ -24,6 +24,9 @@
 > Built from a real production codebase. Everything you need — nothing you don't.
 
 </div>
+
+<!-- Demo GIF coming soon — record with: docker compose up && open http://localhost:8000 -->
+> 📹 Demo video coming soon. Clone and run locally to see it in action.
 
 ---
 
@@ -50,7 +53,7 @@ DjangoForge solves this. It's extracted from [KibaPay](https://github.com/emanth
 
 ```bash
 # 1. Clone
-git clone https://github.com/emanthen/djangoforge && cd djangoforge
+git clone https://github.com/emanthen/DjangoForge && cd DjangoForge
 
 # 2. Configure
 cp .env.example .env          # Edit SECRET_KEY, Stripe keys, etc.
@@ -73,6 +76,15 @@ open http://localhost:8000
 | `admin@djangoforge.dev` | `admin123` | Django superuser |
 
 > **No Docker?** See [local development guide](docs/getting-started/quick-start.md#without-docker).
+
+---
+
+## 🔧 Prerequisites
+
+- **Docker** + **Docker Compose**
+- **Git**
+
+That's it. No other dependencies needed locally.
 
 ---
 
@@ -317,8 +329,8 @@ See [LICENSE](LICENSE) for the full text.
 
 Built with ❤️ by [Prabhat](https://github.com/emanthen) in Nepal 🇳🇵
 
-If DjangoForge saved you time, please **[⭐ star this repo](https://github.com/emanthen/djangoforge)** — it helps others discover it!
+If DjangoForge saved you time, please **[⭐ star this repo](https://github.com/emanthen/DjangoForge)** — it helps others discover it!
 
-**[GitHub](https://github.com/emanthen/djangoforge)** &nbsp;·&nbsp; **[Issues](https://github.com/emanthen/djangoforge/issues)** &nbsp;·&nbsp; **[Discussions](https://github.com/emanthen/djangoforge/discussions)**
+**[GitHub](https://github.com/emanthen/DjangoForge)** &nbsp;·&nbsp; **[Issues](https://github.com/emanthen/DjangoForge/issues)** &nbsp;·&nbsp; **[Discussions](https://github.com/emanthen/DjangoForge/discussions)**
 
 </div>
