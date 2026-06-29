@@ -3,13 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>
-    {% if step == "complete" %}Welcome to DjangoForge!{% else %}Setup your workspace — DjangoForge{% endif %}
-  </title>
+  <title>{% if step == "complete" %}Welcome aboard — DjangoForge{% else %}Set up your workspace — DjangoForge{% endif %}</title>
   <script>
-    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    }
+    if (localStorage.theme==='dark'||(!('theme' in localStorage)&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -18,21 +14,22 @@
       theme: {
         extend: {
           colors: {
-            primary: {
-              50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
-              400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
-              800: '#5b21b6', 900: '#4c1d95', 950: '#2e1065',
-            },
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.4s ease-out',
-            'slide-up': 'slideUp 0.4s ease-out',
-            'bounce-in': 'bounceIn 0.6s ease-out',
+            primary: { 50:'#f5f3ff',100:'#ede9fe',200:'#ddd6fe',300:'#c4b5fd',400:'#a78bfa',500:'#8b5cf6',600:'#7c3aed',700:'#6d28d9',800:'#5b21b6',900:'#4c1d95',950:'#2e1065' },
           },
           keyframes: {
-            fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
-            slideUp: { from: { opacity: '0', transform: 'translateY(16px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
-            bounceIn: { '0%': { opacity: '0', transform: 'scale(0.8)' }, '60%': { transform: 'scale(1.05)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+            'slide-up': { '0%':{ opacity:'0', transform:'translateY(20px)' }, '100%':{ opacity:'1', transform:'translateY(0)' } },
+            'fade-in':  { '0%':{ opacity:'0' }, '100%':{ opacity:'1' } },
+            'pop':      { '0%':{ transform:'scale(0.85)', opacity:'0' }, '60%':{ transform:'scale(1.04)' }, '100%':{ transform:'scale(1)', opacity:'1' } },
+            'ping-once':{ '0%':{ transform:'scale(1)', opacity:'0.8' }, '70%':{ transform:'scale(1.6)', opacity:'0' }, '100%':{ transform:'scale(1.6)', opacity:'0' } },
+            'confetti': { '0%':{ transform:'translateY(0) rotate(0deg)', opacity:'1' }, '100%':{ transform:'translateY(-160px) rotate(720deg)', opacity:'0' } },
+            'drift':    { '0%':{ transform:'translateX(0px) rotate(0deg)' }, '100%':{ transform:'translateX(6px) rotate(3deg)' } },
+          },
+          animation: {
+            'slide-up':'slide-up 0.45s cubic-bezier(.22,1,.36,1) both',
+            'fade-in':'fade-in 0.3s ease both',
+            'pop':'pop 0.55s cubic-bezier(.22,1,.36,1) both',
+            'ping-once':'ping-once 0.7s ease-out both',
+            'drift':'drift 4s ease-in-out infinite alternate',
           },
         },
       },
@@ -40,524 +37,624 @@
   </script>
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
-    [x-cloak] { display: none !important; }
-    .form-input {
-      @apply w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm placeholder-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 dark:focus:border-primary-500 dark:focus:ring-primary-900/30;
+    [x-cloak]{display:none!important}
+
+    /* ── Form tokens ─────────────────────────────────── */
+    .fi {
+      display:block; width:100%; border-radius:.625rem;
+      border:1.5px solid #e2e8f0; background:#fff;
+      padding:.625rem .875rem; font-size:.875rem; color:#0f172a;
+      box-shadow:0 1px 2px 0 rgb(0 0 0/.04);
+      transition:border-color .15s,box-shadow .15s;
     }
-    .form-input.h-24 { height: 6rem; }
-    .form-label { @apply block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5; }
-    .form-helper { @apply text-xs text-slate-400 dark:text-slate-500 mt-1; }
-    .form-error { @apply text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1; }
-    .step-done { @apply w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0; }
-    .step-active { @apply w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0 ring-4 ring-primary-500/30; }
-    .step-pending { @apply w-8 h-8 rounded-full border-2 border-slate-600 flex items-center justify-center flex-shrink-0; }
-    .size-card { @apply cursor-pointer rounded-xl border-2 border-slate-200 dark:border-slate-700 p-3 text-center transition-all duration-150 hover:border-primary-400 dark:hover:border-primary-500; }
-    .size-card.selected { @apply border-primary-500 bg-primary-50 dark:border-primary-500 dark:bg-primary-950; }
+    .fi::placeholder{color:#94a3b8}
+    .fi:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 3px rgb(124 58 237/.15)}
+    .fi-err{border-color:#f87171!important}
+    .fi-err:focus{box-shadow:0 0 0 3px rgb(248 113 113/.15)!important}
+
+    /* with leading icon */
+    .fi-wrap{position:relative}
+    .fi-wrap .fi{padding-left:2.625rem}
+    .fi-icon{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:#94a3b8;pointer-events:none}
+
+    .dark .fi{background:#1e293b;border-color:#334155;color:#f1f5f9}
+    .dark .fi:focus{border-color:#8b5cf6;box-shadow:0 0 0 3px rgb(139 92 246/.2)}
+    .dark .fi::placeholder{color:#475569}
+
+    textarea.fi{min-height:88px;resize:none;line-height:1.5}
+
+    .flabel{display:block;font-size:.8125rem;font-weight:600;color:#374151;margin-bottom:.375rem;letter-spacing:.01em}
+    .dark .flabel{color:#cbd5e1}
+    .fhint{font-size:.75rem;color:#94a3b8;margin-top:.25rem}
+    .ferr{font-size:.75rem;color:#ef4444;margin-top:.25rem;display:flex;align-items:center;gap:.25rem}
+
+    /* ── Size cards ──────────────────────────────────── */
+    .sc{
+      cursor:pointer;border-radius:.75rem;border:1.5px solid #e2e8f0;
+      padding:.625rem .5rem;text-align:center;transition:all .15s;
+      background:#fff;
+    }
+    .sc:hover{border-color:#a78bfa;background:#faf5ff}
+    .sc.active{border-color:#7c3aed;background:#f5f3ff;box-shadow:0 0 0 3px rgb(124 58 237/.12)}
+    .dark .sc{background:#1e293b;border-color:#334155}
+    .dark .sc:hover{border-color:#8b5cf6;background:#1e1340}
+    .dark .sc.active{border-color:#8b5cf6;background:#1e1340;box-shadow:0 0 0 3px rgb(139 92 246/.2)}
+
+    /* ── Step connector line ─────────────────────────── */
+    .step-line{width:2px;height:28px;border-radius:999px;margin:3px auto 3px 15px}
+
+    /* ── Sidebar bg pattern ──────────────────────────── */
+    .sidebar-bg {
+      background: linear-gradient(160deg, #0c0118 0%, #130826 40%, #1a0f3a 70%, #0d0625 100%);
+    }
+
+    /* ── Right panel ─────────────────────────────────── */
+    .panel-bg {
+      background: #f8fafc;
+      background-image: radial-gradient(circle at 80% 10%, rgba(139,92,246,.06) 0%, transparent 60%),
+                        radial-gradient(circle at 10% 90%, rgba(99,102,241,.05) 0%, transparent 60%);
+    }
+    .dark .panel-bg{background:#0f172a}
+
+    /* ── Button ──────────────────────────────────────── */
+    .btn-primary{
+      display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+      padding:.6875rem 1.5rem;border-radius:.75rem;font-weight:700;font-size:.9375rem;
+      background:linear-gradient(135deg,#7c3aed,#6d28d9);
+      color:#fff;border:none;cursor:pointer;
+      box-shadow:0 4px 14px rgb(109 40 217/.35);
+      transition:all .18s;min-height:48px;
+    }
+    .btn-primary:hover{background:linear-gradient(135deg,#6d28d9,#5b21b6);box-shadow:0 6px 20px rgb(109 40 217/.45);transform:translateY(-1px)}
+    .btn-primary:active{transform:translateY(0)}
+    .btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .btn-primary:focus-visible{outline:none;box-shadow:0 0 0 3px rgb(139 92 246/.4)}
+
+    .btn-back{
+      display:inline-flex;align-items:center;gap:.375rem;
+      padding:.5rem 1rem;border-radius:.625rem;font-size:.875rem;font-weight:600;
+      color:#64748b;transition:all .15s;min-height:44px;
+    }
+    .btn-back:hover{color:#334155;background:#f1f5f9}
+    .dark .btn-back:hover{color:#cbd5e1;background:#1e293b}
+
+    /* ── Confetti ────────────────────────────────────── */
+    @keyframes confettiFall {
+      0%  { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+      100%{ transform: translateY(200px) rotate(540deg); opacity: 0; }
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 2px;
+      animation: confettiFall linear infinite;
+    }
+
+    /* ── Completion rings ────────────────────────────── */
+    @keyframes ringPulse {
+      0%  { transform: scale(1); opacity: .5; }
+      100%{ transform: scale(1.5); opacity: 0; }
+    }
+    .ring-pulse { animation: ringPulse 1.8s ease-out infinite; }
   </style>
 </head>
-<body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
 
-<div class="flex min-h-full">
+<body class="h-full text-slate-900 dark:text-slate-100">
+<div class="flex min-h-screen">
 
-  <!-- ── Left sidebar (desktop) ───────────────────────────── -->
-  <aside class="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 bg-slate-900 dark:bg-black flex-shrink-0 p-8 relative overflow-hidden">
-    <!-- Ambient glow -->
+  <!-- ═══════════════════════════════════════════════════════
+       LEFT SIDEBAR
+  ═══════════════════════════════════════════════════════ -->
+  <aside class="hidden lg:flex lg:flex-col lg:w-80 xl:w-[340px] sidebar-bg flex-shrink-0 relative overflow-hidden" aria-label="Setup progress">
+
+    <!-- Decorative glows -->
     <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
-      <div class="absolute top-0 left-0 w-64 h-64 bg-primary-700/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-      <div class="absolute bottom-0 right-0 w-48 h-48 bg-violet-700/15 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+      <div class="absolute top-[-80px] left-[-80px] w-72 h-72 rounded-full" style="background:radial-gradient(circle,rgba(139,92,246,.25) 0%,transparent 70%)"></div>
+      <div class="absolute bottom-[-60px] right-[-60px] w-64 h-64 rounded-full" style="background:radial-gradient(circle,rgba(79,70,229,.2) 0%,transparent 70%)"></div>
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full" style="background:radial-gradient(circle,rgba(109,40,217,.08) 0%,transparent 70%)"></div>
+      <!-- Dot grid -->
+      <svg class="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+            <circle cx="1.5" cy="1.5" r="1.5" fill="white"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#dots)"/>
+      </svg>
     </div>
 
-    <div class="relative z-10 flex flex-col h-full">
+    <div class="relative z-10 flex flex-col h-full p-8">
+
       <!-- Logo -->
-      <div class="mb-10">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+      <div class="mb-12">
+        <a href="/" class="inline-flex items-center gap-3 group">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)">
+            <svg style="width:17px;height:17px" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
           </div>
-          <span class="text-white font-bold text-lg tracking-tight">DjangoForge</span>
-        </div>
+          <span class="text-white font-bold text-lg tracking-tight group-hover:opacity-80 transition-opacity">DjangoForge</span>
+        </a>
       </div>
 
-      <!-- Step progress -->
+      <!-- Steps -->
       <div class="flex-1">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">Setup Progress</p>
+        <p class="text-xs font-semibold uppercase tracking-[.12em] mb-7" style="color:rgba(255,255,255,.3)">Setup Progress</p>
 
-        {% for step_key, step_label in steps %}
-        {% with forloop.counter0 as idx %}
-        <div class="flex items-start gap-3 mb-5 {% if step_key == step %}opacity-100{% elif idx < step_index %}opacity-80{% else %}opacity-40{% endif %} transition-opacity duration-200">
-          <!-- Circle indicator -->
-          {% if idx < step_index %}
-          <div class="step-done">
-            <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-            </svg>
-          </div>
-          {% elif step_key == step %}
-          <div class="step-active">
-            <span class="text-white text-xs font-bold">{{ forloop.counter }}</span>
-          </div>
-          {% else %}
-          <div class="step-pending">
-            <span class="text-slate-500 text-xs font-medium">{{ forloop.counter }}</span>
-          </div>
-          {% endif %}
+        <nav aria-label="Onboarding steps">
+          {% for step_key, step_label in steps %}{% with forloop.counter0 as idx %}
+          <div>
+            <div class="flex items-center gap-3.5">
+              <!-- Indicator -->
+              {% if idx < step_index %}
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,#10b981,#059669)">
+                <svg style="width:14px;height:14px" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              {% elif step_key == step %}
+              <div class="relative flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 0 0 4px rgba(139,92,246,.25)">
+                  <span class="text-white text-xs font-bold">{{ forloop.counter }}</span>
+                </div>
+              </div>
+              {% else %}
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="border:1.5px solid rgba(255,255,255,.15)">
+                <span class="text-xs font-medium" style="color:rgba(255,255,255,.3)">{{ forloop.counter }}</span>
+              </div>
+              {% endif %}
 
-          <!-- Label -->
-          <div class="pt-1">
-            <p class="text-sm font-medium {% if step_key == step %}text-white{% elif idx < step_index %}text-slate-300{% else %}text-slate-500{% endif %}">{{ step_label }}</p>
-            {% if step_key == "organization" and step_key == step %}<p class="text-xs text-slate-500 mt-0.5">Name, industry, size</p>{% endif %}
-            {% if step_key == "contact" and step_key == step %}<p class="text-xs text-slate-500 mt-0.5">Address, phone, email</p>{% endif %}
-            {% if step_key == "profile" and step_key == step %}<p class="text-xs text-slate-500 mt-0.5">Name, role, title</p>{% endif %}
-            {% if step_key == "api" and step_key == step %}<p class="text-xs text-slate-500 mt-0.5">Endpoint, auth, docs</p>{% endif %}
-          </div>
-        </div>
-
-        {% if not forloop.last %}
-        <div class="ml-4 mb-2 w-px h-3 {% if idx < step_index %}bg-emerald-600{% else %}bg-slate-700{% endif %} -mt-2"></div>
-        {% endif %}
-        {% endwith %}
-        {% endfor %}
-      </div>
-
-      <!-- Footer -->
-      <div class="mt-6 pt-6 border-t border-slate-800">
-        <p class="text-slate-500 text-xs flex items-center gap-2">
-          <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          Takes about 3 minutes
-        </p>
-        <p class="text-slate-600 text-xs mt-2">You can update everything later in Settings.</p>
-      </div>
-    </div>
-  </aside>
-
-  <!-- ── Right content area ───────────────────────────────── -->
-  <main class="flex-1 flex flex-col min-h-full" x-data="{}">
-
-    <!-- Mobile header -->
-    <div class="lg:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-3 sticky top-0 z-10">
-      <div class="flex items-center justify-between mb-3">
-        <div class="flex items-center gap-2">
-          <div class="w-6 h-6 bg-primary-600 rounded-md flex items-center justify-center">
-            <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
-          </div>
-          <span class="font-bold text-sm">DjangoForge</span>
-        </div>
-        <span class="text-xs text-slate-500">Step {{ step_index|add:1 }} of {{ total_steps }}</span>
-      </div>
-      <!-- Mobile progress bar -->
-      <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
-        <div class="bg-primary-600 h-1.5 rounded-full transition-all duration-500" style="width: {{ progress_pct }}%"></div>
-      </div>
-    </div>
-
-    <!-- Form area -->
-    <div class="flex-1 flex flex-col items-center justify-center px-4 py-10 sm:px-8">
-      <div class="w-full max-w-xl animate-slide-up">
-
-        {% if step != "complete" %}
-        <!-- Step number (desktop only) -->
-        <div class="hidden lg:flex items-center gap-2 mb-6">
-          <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-950 border border-primary-200 dark:border-primary-800 px-2.5 py-1 rounded-full">
-            <span class="w-4 h-4 bg-primary-600 text-white rounded-full inline-flex items-center justify-center text-[10px] font-bold">{{ step_index|add:1 }}</span>
-            Step {{ step_index|add:1 }} of {{ total_steps }}
-          </span>
-        </div>
-        {% endif %}
-
-        <!-- ══ STEP: organization ══════════════════════════════ -->
-        {% if step == "organization" %}
-        <div>
-          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50 mb-1">Tell us about your company</h1>
-          <p class="text-slate-500 dark:text-slate-400 mb-8">Help us personalize your experience. You can change this anytime.</p>
-
-          <form method="post" autocomplete="on" x-data="{ loading: false }" @submit="loading = true" novalidate>
-            {% csrf_token %}
-            <div class="space-y-5">
-
-              <!-- Company name -->
-              <div>
-                <label for="id_name" class="form-label">
-                  Company name <span class="text-red-500" aria-hidden="true">*</span>
-                </label>
-                <input type="text" name="name" id="id_name"
-                       class="form-input{% if form.name.errors %} border-red-400 focus:border-red-400 focus:ring-red-100{% endif %}"
-                       value="{{ form.name.value|default:'' }}"
-                       placeholder="Acme Inc." autocomplete="organization" required>
-                {% if form.name.errors %}
-                <p class="form-error" role="alert">
-                  <svg style="width:12px;height:12px;" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                  {{ form.name.errors.0 }}
+              <!-- Label -->
+              <div class="{% if step_key == step %}opacity-100{% elif idx < step_index %}opacity-70{% else %}opacity-30{% endif %} transition-opacity duration-300">
+                <p class="text-sm font-semibold {% if step_key == step %}text-white{% else %}text-slate-300{% endif %}">{{ step_label }}</p>
+                {% if step_key == step %}
+                <p class="text-xs mt-0.5" style="color:rgba(255,255,255,.4)">
+                  {% if step_key == "organization" %}Company name, industry, size{% endif %}
+                  {% if step_key == "contact" %}Address, phone, legal info{% endif %}
+                  {% if step_key == "profile" %}Name, role, job title{% endif %}
+                  {% if step_key == "api" %}API endpoint, auth, docs{% endif %}
+                  {% if step_key == "complete" %}Ready to launch{% endif %}
                 </p>
                 {% endif %}
               </div>
+            </div>
 
-              <!-- Industry -->
-              <div>
-                <label for="id_industry" class="form-label">Industry</label>
-                <select name="industry" id="id_industry" class="form-input">
-                  {% for value, label in form.fields.industry.choices %}
-                  <option value="{{ value }}" {% if form.industry.value == value %}selected{% endif %}>{{ label }}</option>
-                  {% endfor %}
-                </select>
-              </div>
+            {% if not forloop.last %}
+            <div class="step-line ml-[15px] my-1.5 {% if idx < step_index %}bg-emerald-600/60{% else %}bg-white/10{% endif %}"></div>
+            {% endif %}
+          </div>
+          {% endwith %}{% endfor %}
+        </nav>
+      </div>
 
-              <!-- Company size — visual radio cards -->
-              <div>
-                <label class="form-label">Company size</label>
-                <input type="hidden" name="company_size" id="company_size_hidden" value="{{ form.company_size.value|default:'' }}">
-                <div class="grid grid-cols-3 gap-2" x-data="{ selected: '{{ form.company_size.value|default:'' }}' }"
-                     x-init="$watch('selected', v => document.getElementById('company_size_hidden').value = v)">
-                  {% for value, label in form.fields.company_size.choices %}
-                  {% if value %}
-                  <button type="button"
-                          class="size-card text-xs sm:text-sm"
-                          :class="selected === '{{ value }}' ? 'selected' : ''"
-                          @click="selected = '{{ value }}'">
-                    <span class="block font-medium text-slate-700 dark:text-slate-300">{{ label }}</span>
-                  </button>
-                  {% endif %}
-                  {% endfor %}
+      <!-- Bottom card -->
+      <div class="mt-8 rounded-2xl p-4" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,.2)">
+            <svg style="width:14px;height:14px" fill="none" viewBox="0 0 24 24" stroke="#a78bfa" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <p class="text-sm font-semibold text-white">Enterprise-grade security</p>
+        </div>
+        <p class="text-xs leading-relaxed" style="color:rgba(255,255,255,.4)">All data encrypted in transit and at rest. SOC 2-ready infrastructure with full audit logs.</p>
+        <div class="flex items-center gap-2 mt-3 pt-3" style="border-top:1px solid rgba(255,255,255,.07)">
+          <svg style="width:12px;height:12px;flex-shrink:0" fill="none" viewBox="0 0 24 24" stroke="#a78bfa" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-xs" style="color:rgba(255,255,255,.35)">About 3 minutes to complete</span>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════════════
+       RIGHT PANEL
+  ═══════════════════════════════════════════════════════ -->
+  <main class="flex-1 flex flex-col min-h-screen panel-bg">
+
+    <!-- Mobile top bar -->
+    <header class="lg:hidden sticky top-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 px-4 py-3">
+      <div class="flex items-center justify-between mb-2.5">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-md flex items-center justify-center" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)">
+            <svg style="width:11px;height:11px" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <span class="font-bold text-sm">DjangoForge</span>
+        </div>
+        <span class="text-xs font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">
+          {{ step_index|add:1 }}&nbsp;/&nbsp;{{ total_steps }}
+        </span>
+      </div>
+      <div class="relative h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+        <div class="absolute inset-y-0 left-0 rounded-full transition-all duration-500" style="width:{{ progress_pct }}%;background:linear-gradient(90deg,#7c3aed,#4f46e5)"></div>
+      </div>
+    </header>
+
+    <!-- Form wrapper -->
+    <div class="flex-1 flex items-center justify-center px-4 py-10 sm:px-8">
+      <div class="w-full max-w-[520px]">
+
+        <!-- ══ STEP: organization ═════════════════════════════ -->
+        {% if step == "organization" %}
+        <div class="animate-slide-up">
+          <!-- Header -->
+          <div class="mb-8">
+            <div class="inline-flex items-center gap-2 text-xs font-semibold text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/50 border border-primary-200 dark:border-primary-800/60 px-3 py-1.5 rounded-full mb-4">
+              <span class="w-4 h-4 rounded-full bg-primary-600 text-white inline-flex items-center justify-center text-[10px] font-bold">1</span>
+              Company Details
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight">Tell us about your&nbsp;company</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">Help us personalise your workspace. Everything can be changed later.</p>
+          </div>
+
+          <!-- Card -->
+          <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_24px_-4px_rgb(0,0,0,.1)] border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8">
+            <form method="post" autocomplete="on" x-data="{loading:false}" @submit="loading=true" novalidate>
+              {% csrf_token %}
+              <div class="space-y-5">
+
+                <!-- Company name -->
+                <div>
+                  <label for="id_name" class="flabel">Company name <span class="text-red-500" aria-hidden="true">*</span></label>
+                  <div class="fi-wrap">
+                    <span class="fi-icon">
+                      <svg style="width:16px;height:16px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    </span>
+                    <input type="text" name="name" id="id_name"
+                           class="fi {% if form.name.errors %}fi-err{% endif %}"
+                           value="{{ form.name.value|default:'' }}"
+                           placeholder="Acme Inc." autocomplete="organization" required
+                           autofocus>
+                  </div>
+                  {% if form.name.errors %}<p class="ferr" role="alert"><svg style="width:12px;height:12px;flex-shrink:0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>{{ form.name.errors.0 }}</p>{% endif %}
                 </div>
+
+                <!-- Industry -->
+                <div>
+                  <label for="id_industry" class="flabel">Industry</label>
+                  <div class="fi-wrap">
+                    <span class="fi-icon">
+                      <svg style="width:16px;height:16px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    <select name="industry" id="id_industry" class="fi" style="padding-left:2.625rem;appearance:none">
+                      {% for value, label in form.fields.industry.choices %}
+                      <option value="{{ value }}" {% if form.industry.value == value %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <svg style="width:14px;height:14px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Company size -->
+                <div x-data="{ sz: '{{ form.company_size.value|default:'' }}' }">
+                  <label class="flabel">Company size</label>
+                  <input type="hidden" name="company_size" :value="sz">
+                  <div class="grid grid-cols-3 gap-2">
+                    {% for value, label in form.fields.company_size.choices %}{% if value %}
+                    <button type="button"
+                            class="sc"
+                            :class="sz==='{{ value }}' ? 'active' : ''"
+                            @click="sz='{{ value }}'">
+                      <span class="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 leading-tight">{{ label }}</span>
+                    </button>
+                    {% endif %}{% endfor %}
+                  </div>
+                </div>
+
+                <!-- Website -->
+                <div>
+                  <label for="id_website" class="flabel">Website <span class="font-normal text-slate-400">(optional)</span></label>
+                  <div class="fi-wrap">
+                    <span class="fi-icon">
+                      <svg style="width:15px;height:15px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                    </span>
+                    <input type="url" name="website" id="id_website" class="fi"
+                           value="{{ form.website.value|default:'' }}"
+                           placeholder="https://yourcompany.com" autocomplete="url">
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                  <label for="id_description" class="flabel">Short description <span class="font-normal text-slate-400">(optional)</span></label>
+                  <textarea name="description" id="id_description" class="fi" rows="3"
+                            placeholder="What does your company do? (2–3 sentences)">{{ form.description.value|default:'' }}</textarea>
+                  <p class="fhint">Helps personalise your experience.</p>
+                </div>
+
               </div>
 
-              <!-- Website -->
-              <div>
-                <label for="id_website" class="form-label">Website <span class="text-slate-400 font-normal">(optional)</span></label>
-                <input type="url" name="website" id="id_website" class="form-input"
-                       value="{{ form.website.value|default:'' }}"
-                       placeholder="https://yourcompany.com" autocomplete="url">
+              <!-- CTA -->
+              <div class="mt-7 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                <button type="submit" class="btn-primary w-full sm:w-auto" :disabled="loading">
+                  <span x-show="!loading">Continue</span>
+                  <span x-show="loading" x-cloak class="flex items-center gap-2">
+                    <svg class="animate-spin" style="width:15px;height:15px" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    Saving…
+                  </span>
+                  <svg x-show="!loading" style="width:16px;height:16px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
               </div>
 
-              <!-- Description -->
-              <div>
-                <label for="id_description" class="form-label">What does your company do? <span class="text-slate-400 font-normal">(optional)</span></label>
-                <textarea name="description" id="id_description" rows="3"
-                          class="form-input resize-none"
-                          placeholder="Briefly describe your company…">{{ form.description.value|default:'' }}</textarea>
-                <p class="form-helper">This helps us tailor your experience.</p>
-              </div>
-
-            </div>
-
-            <!-- Nav buttons -->
-            <div class="flex items-center justify-end mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
-              <button type="submit"
-                      class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl shadow-sm transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-                      :disabled="loading">
-                <span x-show="!loading">Continue</span>
-                <span x-show="loading" x-cloak class="flex items-center gap-2">
-                  <svg class="animate-spin" style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                  </svg>
-                  Saving…
-                </span>
-                <svg x-show="!loading" style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                </svg>
-              </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
 
         <!-- ══ STEP: contact ══════════════════════════════════ -->
         {% elif step == "contact" %}
-        <div>
-          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50 mb-1">Contact & registration</h1>
-          <p class="text-slate-500 dark:text-slate-400 mb-8">Used for billing, legal compliance, and support. All fields are optional.</p>
-
-          <form method="post" autocomplete="on" x-data="{ loading: false }" @submit="loading = true">
-            {% csrf_token %}
-            <div class="space-y-5">
-
-              <!-- Phone + Support email row -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label for="id_phone" class="form-label">Business phone</label>
-                  <input type="tel" name="phone" id="id_phone" class="form-input"
-                         value="{{ form.phone.value|default:'' }}"
-                         placeholder="+1 (555) 000-0000" autocomplete="tel">
-                </div>
-                <div>
-                  <label for="id_support_email" class="form-label">Support email</label>
-                  <input type="email" name="support_email" id="id_support_email" class="form-input"
-                         value="{{ form.support_email.value|default:'' }}"
-                         placeholder="support@company.com" autocomplete="email">
-                </div>
-              </div>
-
-              <!-- Address -->
-              <div>
-                <label for="id_address_line1" class="form-label">Address line 1</label>
-                <input type="text" name="address_line1" id="id_address_line1" class="form-input"
-                       value="{{ form.address_line1.value|default:'' }}"
-                       placeholder="123 Main Street" autocomplete="address-line1">
-              </div>
-
-              <div>
-                <label for="id_address_line2" class="form-label">Address line 2 <span class="text-slate-400 font-normal">(optional)</span></label>
-                <input type="text" name="address_line2" id="id_address_line2" class="form-input"
-                       value="{{ form.address_line2.value|default:'' }}"
-                       placeholder="Suite 400, Floor 3…" autocomplete="address-line2">
-              </div>
-
-              <!-- City / State / Postal -->
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div class="col-span-2 sm:col-span-1">
-                  <label for="id_city" class="form-label">City</label>
-                  <input type="text" name="city" id="id_city" class="form-input"
-                         value="{{ form.city.value|default:'' }}"
-                         placeholder="San Francisco" autocomplete="address-level2">
-                </div>
-                <div>
-                  <label for="id_state" class="form-label">State / Region</label>
-                  <input type="text" name="state" id="id_state" class="form-input"
-                         value="{{ form.state.value|default:'' }}"
-                         placeholder="CA" autocomplete="address-level1">
-                </div>
-                <div>
-                  <label for="id_postal_code" class="form-label">Postal code</label>
-                  <input type="text" name="postal_code" id="id_postal_code" class="form-input"
-                         value="{{ form.postal_code.value|default:'' }}"
-                         placeholder="94107" autocomplete="postal-code">
-                </div>
-              </div>
-
-              <!-- Country -->
-              <div>
-                <label for="id_country" class="form-label">Country</label>
-                <select name="country" id="id_country" class="form-input">
-                  {% for value, label in form.fields.country.choices %}
-                  <option value="{{ value }}" {% if form.country.value == value %}selected{% endif %}>{{ label }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-
-              <!-- Registration number -->
-              <div>
-                <label for="id_registration_number" class="form-label">Company registration number <span class="text-slate-400 font-normal">(optional)</span></label>
-                <input type="text" name="registration_number" id="id_registration_number" class="form-input"
-                       value="{{ form.registration_number.value|default:'' }}"
-                       placeholder="EIN, VAT, Company #…">
-                <p class="form-helper">Used for invoices. Leave blank if not applicable.</p>
-              </div>
-
+        <div class="animate-slide-up">
+          <div class="mb-8">
+            <div class="inline-flex items-center gap-2 text-xs font-semibold text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/50 border border-primary-200 dark:border-primary-800/60 px-3 py-1.5 rounded-full mb-4">
+              <span class="w-4 h-4 rounded-full bg-primary-600 text-white inline-flex items-center justify-center text-[10px] font-bold">2</span>
+              Contact Info
             </div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight">Contact &amp; registration</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">Used for billing, invoicing, and legal compliance. All fields are optional.</p>
+          </div>
 
-            <!-- Nav buttons -->
-            <div class="flex items-center justify-between mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
-              <a href="?step=organization"
-                 class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-slate-300">
-                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                </svg>
-                Back
-              </a>
-              <button type="submit"
-                      class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl shadow-sm transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-                      :disabled="loading">
-                <span x-show="!loading">Continue</span>
-                <span x-show="loading" x-cloak class="flex items-center gap-2">
-                  <svg class="animate-spin" style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                  </svg>
-                  Saving…
-                </span>
-                <svg x-show="!loading" style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                </svg>
-              </button>
-            </div>
-          </form>
+          <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_24px_-4px_rgb(0,0,0,.1)] border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8">
+            <form method="post" autocomplete="on" x-data="{loading:false}" @submit="loading=true">
+              {% csrf_token %}
+              <div class="space-y-5">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label for="id_phone" class="flabel">Business phone</label>
+                    <div class="fi-wrap">
+                      <span class="fi-icon"><svg style="width:15px;height:15px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg></span>
+                      <input type="tel" name="phone" id="id_phone" class="fi" value="{{ form.phone.value|default:'' }}" placeholder="+1 (555) 000-0000" autocomplete="tel">
+                    </div>
+                  </div>
+                  <div>
+                    <label for="id_support_email" class="flabel">Support email</label>
+                    <div class="fi-wrap">
+                      <span class="fi-icon"><svg style="width:15px;height:15px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
+                      <input type="email" name="support_email" id="id_support_email" class="fi" value="{{ form.support_email.value|default:'' }}" placeholder="support@company.com" autocomplete="email">
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="id_address_line1" class="flabel">Address line 1</label>
+                  <div class="fi-wrap">
+                    <span class="fi-icon"><svg style="width:15px;height:15px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></span>
+                    <input type="text" name="address_line1" id="id_address_line1" class="fi" value="{{ form.address_line1.value|default:'' }}" placeholder="123 Main Street" autocomplete="address-line1">
+                  </div>
+                </div>
+
+                <div>
+                  <label for="id_address_line2" class="flabel">Address line 2 <span class="font-normal text-slate-400">(optional)</span></label>
+                  <input type="text" name="address_line2" id="id_address_line2" class="fi" value="{{ form.address_line2.value|default:'' }}" placeholder="Suite 400, Floor 3…" autocomplete="address-line2">
+                </div>
+
+                <div class="grid grid-cols-6 gap-3">
+                  <div class="col-span-6 sm:col-span-2">
+                    <label for="id_city" class="flabel">City</label>
+                    <input type="text" name="city" id="id_city" class="fi" value="{{ form.city.value|default:'' }}" placeholder="San Francisco" autocomplete="address-level2">
+                  </div>
+                  <div class="col-span-3 sm:col-span-2">
+                    <label for="id_state" class="flabel">State / Region</label>
+                    <input type="text" name="state" id="id_state" class="fi" value="{{ form.state.value|default:'' }}" placeholder="CA" autocomplete="address-level1">
+                  </div>
+                  <div class="col-span-3 sm:col-span-2">
+                    <label for="id_postal_code" class="flabel">Postal code</label>
+                    <input type="text" name="postal_code" id="id_postal_code" class="fi" value="{{ form.postal_code.value|default:'' }}" placeholder="94107" autocomplete="postal-code">
+                  </div>
+                </div>
+
+                <div>
+                  <label for="id_country" class="flabel">Country</label>
+                  <div class="fi-wrap">
+                    <span class="fi-icon"><svg style="width:15px;height:15px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+                    <select name="country" id="id_country" class="fi" style="padding-left:2.625rem;appearance:none">
+                      {% for value, label in form.fields.country.choices %}
+                      <option value="{{ value }}" {% if form.country.value == value %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <svg style="width:14px;height:14px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="id_registration_number" class="flabel">Company registration number <span class="font-normal text-slate-400">(optional)</span></label>
+                  <input type="text" name="registration_number" id="id_registration_number" class="fi" value="{{ form.registration_number.value|default:'' }}" placeholder="EIN, VAT number, Company #…">
+                  <p class="fhint">Printed on invoices. Leave blank if not applicable.</p>
+                </div>
+
+              </div>
+
+              <div class="mt-7 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <a href="?step=organization" class="btn-back">
+                  <svg style="width:15px;height:15px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>Back
+                </a>
+                <button type="submit" class="btn-primary" :disabled="loading">
+                  <span x-show="!loading">Continue</span>
+                  <span x-show="loading" x-cloak class="flex items-center gap-2"><svg class="animate-spin" style="width:15px;height:15px" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Saving…</span>
+                  <svg x-show="!loading" style="width:16px;height:16px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
         <!-- ══ STEP: profile ══════════════════════════════════ -->
         {% elif step == "profile" %}
-        <div>
-          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50 mb-1">Set up your profile</h1>
-          <p class="text-slate-500 dark:text-slate-400 mb-8">Let your teammates know who you are.</p>
-
-          <!-- Avatar placeholder -->
-          <div class="flex items-center gap-4 mb-8 p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary-500 to-violet-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0" id="avatar-preview">
-              {{ request.user.email|first|upper }}
+        <div class="animate-slide-up">
+          <div class="mb-8">
+            <div class="inline-flex items-center gap-2 text-xs font-semibold text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/50 border border-primary-200 dark:border-primary-800/60 px-3 py-1.5 rounded-full mb-4">
+              <span class="w-4 h-4 rounded-full bg-primary-600 text-white inline-flex items-center justify-center text-[10px] font-bold">3</span>
+              Your Profile
             </div>
-            <div class="min-w-0">
-              <p class="font-medium text-slate-900 dark:text-slate-100 truncate" id="name-preview">{{ request.user.email }}</p>
-              <p class="text-sm text-slate-500 dark:text-slate-400">{{ request.user.email }}</p>
-            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight">Set up your profile</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">Let your teammates know who you are.</p>
           </div>
 
-          <form method="post" autocomplete="on" x-data="{ loading: false, first: '{{ form.first_name.value|default:'' }}', last: '{{ form.last_name.value|default:'' }}' }" @submit="loading = true">
-            {% csrf_token %}
-            <div class="space-y-5">
+          <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_24px_-4px_rgb(0,0,0,.1)] border border-slate-200/80 dark:border-slate-800 overflow-hidden">
 
-              <!-- First + Last name row -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label for="id_first_name" class="form-label">
-                    First name <span class="text-red-500" aria-hidden="true">*</span>
-                  </label>
-                  <input type="text" name="first_name" id="id_first_name" class="form-input{% if form.first_name.errors %} border-red-400{% endif %}"
-                         x-model="first"
-                         value="{{ form.first_name.value|default:'' }}"
-                         placeholder="Jane" autocomplete="given-name" required>
-                  {% if form.first_name.errors %}<p class="form-error" role="alert">{{ form.first_name.errors.0 }}</p>{% endif %}
+            <!-- Profile preview banner -->
+            <div class="px-6 sm:px-8 pt-6 pb-5 border-b border-slate-100 dark:border-slate-800" x-data="{fn:'{{ form.first_name.value|default:'' }}',ln:'{{ form.last_name.value|default:'' }}',jt:'{{ form.job_title.value|default:'' }}'}" id="profile-preview-wrap">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)">
+                  <span x-text="fn ? fn[0].toUpperCase() : '{{ request.user.email|first|upper }}'"></span>
                 </div>
-                <div>
-                  <label for="id_last_name" class="form-label">Last name</label>
-                  <input type="text" name="last_name" id="id_last_name" class="form-input"
-                         x-model="last"
-                         value="{{ form.last_name.value|default:'' }}"
-                         placeholder="Smith" autocomplete="family-name">
+                <div class="min-w-0">
+                  <p class="font-bold text-slate-900 dark:text-slate-100 truncate leading-tight" x-text="(fn || ln) ? (fn+' '+ln).trim() : '{{ request.user.email }}'"></p>
+                  <p class="text-sm text-slate-400 truncate mt-0.5" x-text="jt || 'Your job title'"></p>
+                  <p class="text-xs text-slate-400 mt-0.5">{{ request.user.email }}</p>
                 </div>
               </div>
-
-              <!-- Job title -->
-              <div>
-                <label for="id_job_title" class="form-label">Job title</label>
-                <input type="text" name="job_title" id="id_job_title" class="form-input"
-                       value="{{ form.job_title.value|default:'' }}"
-                       placeholder="CTO, Product Manager, Full-Stack Developer…"
-                       autocomplete="organization-title">
-                <p class="form-helper">Visible to your organization members.</p>
-              </div>
-
             </div>
 
-            <!-- Nav buttons -->
-            <div class="flex items-center justify-between mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
-              <a href="?step=contact"
-                 class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-slate-300">
-                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                </svg>
-                Back
-              </a>
-              <button type="submit"
-                      class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl shadow-sm transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-                      :disabled="loading">
-                <span x-show="!loading">Continue</span>
-                <span x-show="loading" x-cloak class="flex items-center gap-2">
-                  <svg class="animate-spin" style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                  </svg>
-                  Saving…
-                </span>
-                <svg x-show="!loading" style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                </svg>
-              </button>
+            <div class="p-6 sm:p-8">
+              <form method="post" autocomplete="on" x-data="{loading:false}" @submit="loading=true">
+                {% csrf_token %}
+                <div class="space-y-5">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label for="id_first_name" class="flabel">First name <span class="text-red-500">*</span></label>
+                      <input type="text" name="first_name" id="id_first_name"
+                             class="fi {% if form.first_name.errors %}fi-err{% endif %}"
+                             value="{{ form.first_name.value|default:'' }}"
+                             placeholder="Jane" autocomplete="given-name"
+                             x-on:input="$refs.previewWrap && null"
+                             @input="document.querySelector('[x-data]').__x.$data.fn = $event.target.value" required>
+                      {% if form.first_name.errors %}<p class="ferr" role="alert">{{ form.first_name.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                      <label for="id_last_name" class="flabel">Last name</label>
+                      <input type="text" name="last_name" id="id_last_name" class="fi"
+                             value="{{ form.last_name.value|default:'' }}"
+                             placeholder="Smith" autocomplete="family-name">
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="id_job_title" class="flabel">Job title</label>
+                    <div class="fi-wrap">
+                      <span class="fi-icon"><svg style="width:15px;height:15px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
+                      <input type="text" name="job_title" id="id_job_title" class="fi"
+                             value="{{ form.job_title.value|default:'' }}"
+                             placeholder="CTO, Product Manager, Lead Engineer…"
+                             autocomplete="organization-title">
+                    </div>
+                    <p class="fhint">Visible to your organization members.</p>
+                  </div>
+                </div>
+
+                <div class="mt-7 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <a href="?step=contact" class="btn-back"><svg style="width:15px;height:15px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>Back</a>
+                  <button type="submit" class="btn-primary" :disabled="loading">
+                    <span x-show="!loading">Continue</span>
+                    <span x-show="loading" x-cloak class="flex items-center gap-2"><svg class="animate-spin" style="width:15px;height:15px" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Saving…</span>
+                    <svg x-show="!loading" style="width:16px;height:16px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </form>
             </div>
-          </form>
+          </div>
         </div>
 
         <!-- ══ STEP: api ══════════════════════════════════════ -->
         {% elif step == "api" %}
-        <div x-data="{ copied: false }">
-          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50 mb-1">API & developer settings</h1>
-          <p class="text-slate-500 dark:text-slate-400 mb-8">Connect your apps using the DjangoForge REST API.</p>
+        <div class="animate-slide-up" x-data="{copied:false}">
+          <div class="mb-8">
+            <div class="inline-flex items-center gap-2 text-xs font-semibold text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/50 border border-primary-200 dark:border-primary-800/60 px-3 py-1.5 rounded-full mb-4">
+              <span class="w-4 h-4 rounded-full bg-primary-600 text-white inline-flex items-center justify-center text-[10px] font-bold">4</span>
+              API &amp; Settings
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight">Connect your&nbsp;apps</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">Access DjangoForge programmatically via the REST API.</p>
+          </div>
 
-          <div class="space-y-5">
+          <div class="space-y-4">
 
-            <!-- API base URL -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
-              <div class="flex items-start justify-between gap-3 mb-3">
+            <!-- API URL card -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_24px_-4px_rgb(0,0,0,.1)] border border-slate-200/80 dark:border-slate-800 p-5">
+              <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-950 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
+                  <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0)">
+                    <svg style="width:14px;height:14px" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                   </div>
-                  <h3 class="font-semibold text-sm text-slate-900 dark:text-slate-100">Base API URL</h3>
+                  <div>
+                    <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Base API URL</p>
+                    <p class="text-xs text-slate-400">REST · JSON · Session auth</p>
+                  </div>
                 </div>
                 <button type="button"
-                        @click="navigator.clipboard.writeText('{{ api_base }}'); copied = true; setTimeout(() => copied = false, 2000)"
-                        class="flex-shrink-0 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 min-h-[32px] px-3 py-1 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-950 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-300">
-                  <span x-show="!copied">Copy</span>
-                  <span x-show="copied" x-cloak class="text-emerald-600">Copied!</span>
+                        @click="navigator.clipboard.writeText('{{ api_base }}');copied=true;setTimeout(()=>copied=false,2200)"
+                        class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all min-h-[32px] focus:outline-none focus:ring-2 focus:ring-primary-300"
+                        :class="copied ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950' : 'text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950'">
+                  <svg x-show="!copied" style="width:13px;height:13px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  <svg x-show="copied" x-cloak style="width:13px;height:13px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  <span x-text="copied ? 'Copied!' : 'Copy'"></span>
                 </button>
               </div>
-              <code class="block bg-slate-50 dark:bg-slate-950 rounded-lg p-3 text-sm text-slate-700 dark:text-slate-300 font-mono break-all select-all border border-slate-200 dark:border-slate-800">{{ api_base }}</code>
-            </div>
-
-            <!-- Authentication -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
-              <div class="flex items-center gap-2.5 mb-3">
-                <div class="w-8 h-8 bg-amber-100 dark:bg-amber-950 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="#d97706" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                  </svg>
-                </div>
-                <h3 class="font-semibold text-sm text-slate-900 dark:text-slate-100">Authentication</h3>
+              <div class="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800">
+                <code class="block px-4 py-3 text-sm font-mono text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-950 select-all break-all">{{ api_base }}</code>
               </div>
-              <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">The API uses session-based authentication. Include your session cookie in requests after logging in.</p>
-              <code class="block bg-slate-50 dark:bg-slate-950 rounded-lg p-3 text-xs text-slate-700 dark:text-slate-300 font-mono border border-slate-200 dark:border-slate-800 whitespace-pre-wrap">curl {{ api_base }}me/ \
-  -H "Cookie: sessionid=YOUR_SESSION"</code>
             </div>
 
-            <!-- Links -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <a href="{{ swagger_url }}" target="_blank" rel="noopener"
-                 class="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 transition-colors group">
-                <div class="w-9 h-9 bg-primary-100 dark:bg-primary-950 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="1.75">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                  </svg>
+            <!-- Auth card -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_24px_-4px_rgb(0,0,0,.1)] border border-slate-200/80 dark:border-slate-800 p-5">
+              <div class="flex items-center gap-2.5 mb-3">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,#fef3c7,#fde68a)">
+                  <svg style="width:14px;height:14px" fill="none" viewBox="0 0 24 24" stroke="#d97706" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
                 </div>
                 <div>
-                  <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-primary-700 dark:group-hover:text-primary-400">Swagger UI</p>
-                  <p class="text-xs text-slate-500">Interactive API explorer</p>
+                  <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Authentication</p>
+                  <p class="text-xs text-slate-400">Session cookie · CSRF protected</p>
                 </div>
-                <svg style="width:14px;height:14px;" class="ml-auto text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                </svg>
-              </a>
+              </div>
+              <div class="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2 px-4 py-2 bg-slate-800 border-b border-slate-700">
+                  <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                  <span class="text-xs text-slate-400 ml-1 font-mono">bash</span>
+                </div>
+                <pre class="px-4 py-3 text-xs font-mono text-emerald-400 bg-slate-900 overflow-x-auto leading-relaxed">curl {{ api_base }}me/ \
+  -H "Cookie: sessionid=YOUR_SESSION_ID" \
+  -H "Accept: application/json"</pre>
+              </div>
+            </div>
 
+            <!-- Links row -->
+            <div class="grid grid-cols-2 gap-3">
+              <a href="{{ swagger_url }}" target="_blank" rel="noopener"
+                 class="group flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md transition-all shadow-[0_1px_8px_-2px_rgb(0,0,0,.06)]">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe)">
+                  <svg style="width:16px;height:16px" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary-700 dark:group-hover:text-primary-400 truncate">Swagger UI</p>
+                  <p class="text-xs text-slate-400">Interactive explorer</p>
+                </div>
+              </a>
               <a href="https://github.com/emanthen/DjangoForge/blob/main/docs/api.md" target="_blank" rel="noopener"
-                 class="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 transition-colors group">
-                <div class="w-9 h-9 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <svg style="width:16px;height:16px;" fill="currentColor" viewBox="0 0 24 24" class="text-slate-700 dark:text-slate-300">
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                  </svg>
+                 class="group flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md transition-all shadow-[0_1px_8px_-2px_rgb(0,0,0,.06)]">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-100 dark:bg-slate-800">
+                  <svg style="width:16px;height:16px" fill="currentColor" viewBox="0 0 24 24" class="text-slate-700 dark:text-slate-300"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                 </div>
-                <div>
-                  <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-primary-700 dark:group-hover:text-primary-400">API Docs</p>
-                  <p class="text-xs text-slate-500">Full reference on GitHub</p>
+                <div class="min-w-0">
+                  <p class="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary-700 dark:group-hover:text-primary-400 truncate">API Docs</p>
+                  <p class="text-xs text-slate-400">Full reference</p>
                 </div>
-                <svg style="width:14px;height:14px;" class="ml-auto text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                </svg>
               </a>
             </div>
 
           </div>
 
-          <!-- Nav buttons -->
           <form method="post">
             {% csrf_token %}
-            <div class="flex items-center justify-between mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
-              <a href="?step=profile"
-                 class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-slate-300">
-                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                </svg>
-                Back
-              </a>
-              <button type="submit"
-                      class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl shadow-sm transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+            <div class="mt-7 flex items-center justify-between">
+              <a href="?step=profile" class="btn-back"><svg style="width:15px;height:15px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>Back</a>
+              <button type="submit" class="btn-primary">
                 Finish setup
-                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                </svg>
+                <svg style="width:16px;height:16px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
               </button>
             </div>
           </form>
@@ -565,93 +662,100 @@
 
         <!-- ══ STEP: complete ═════════════════════════════════ -->
         {% elif step == "complete" %}
-        <div class="text-center animate-bounce-in">
-          <!-- Celebration icon -->
-          <div class="relative inline-flex items-center justify-center mb-6">
-            <div class="w-24 h-24 bg-gradient-to-br from-primary-500 to-violet-600 rounded-3xl flex items-center justify-center shadow-xl shadow-primary-500/30">
-              <svg style="width:40px;height:40px;" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        <div class="animate-pop text-center">
+
+          <!-- Celebration mark -->
+          <div class="relative inline-flex items-center justify-center mb-8" aria-hidden="true">
+            <!-- Rings -->
+            <div class="absolute w-36 h-36 rounded-full ring-pulse" style="border:2px solid rgba(124,58,237,.15)"></div>
+            <div class="absolute w-28 h-28 rounded-full ring-pulse" style="border:2px solid rgba(124,58,237,.2);animation-delay:.4s"></div>
+            <!-- Main circle -->
+            <div class="relative w-20 h-20 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 8px 32px rgba(124,58,237,.4)">
+              <svg style="width:36px;height:36px" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
               </svg>
             </div>
-            <!-- Decorative dots -->
-            <div class="absolute -top-2 -right-2 w-4 h-4 bg-amber-400 rounded-full animate-bounce" style="animation-delay:0.1s"></div>
-            <div class="absolute -bottom-1 -left-3 w-3 h-3 bg-emerald-400 rounded-full animate-bounce" style="animation-delay:0.3s"></div>
-            <div class="absolute top-0 -left-4 w-2 h-2 bg-pink-400 rounded-full animate-bounce" style="animation-delay:0.5s"></div>
+            <!-- Dots -->
+            <span class="absolute -top-3 right-0 w-4 h-4 rounded-full bg-amber-400 animate-bounce" style="animation-delay:.1s"></span>
+            <span class="absolute top-2 -right-5 w-3 h-3 rounded-full bg-pink-500 animate-bounce" style="animation-delay:.25s"></span>
+            <span class="absolute -bottom-2 -left-4 w-3.5 h-3.5 rounded-full bg-emerald-400 animate-bounce" style="animation-delay:.4s"></span>
+            <span class="absolute top-0 -left-5 w-2.5 h-2.5 rounded-full bg-sky-400 animate-bounce" style="animation-delay:.55s"></span>
           </div>
 
-          <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-50 mb-3">
-            You're all set! 🎉
+          <!-- Heading -->
+          <h1 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-3 leading-tight">
+            You're all set!
           </h1>
-          <p class="text-slate-500 dark:text-slate-400 text-lg mb-10 max-w-md mx-auto">
-            <strong class="text-slate-700 dark:text-slate-300">{{ org.name }}</strong> is ready to go. Here are some things to do next.
+          <p class="text-slate-500 dark:text-slate-400 text-base mb-2">
+            <span class="font-bold text-slate-700 dark:text-slate-200">{{ org.name }}</span> workspace is ready to launch.
           </p>
+          <p class="text-slate-400 dark:text-slate-500 text-sm mb-10">Here's what to do next.</p>
 
-          <!-- Quick action cards -->
+          <!-- Next-step cards -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10 text-left">
 
             <a href="{% url 'organizations:members' %}"
-               class="flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md transition-all group">
-              <div class="w-9 h-9 bg-blue-100 dark:bg-blue-950 rounded-xl flex items-center justify-center mb-3">
-                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="#3b82f6" stroke-width="1.75">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                </svg>
+               class="group relative flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-lg transition-all shadow-[0_1px_8px_-2px_rgb(0,0,0,.06)] overflow-hidden">
+              <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style="background:linear-gradient(135deg,rgba(59,130,246,.04),transparent)"></div>
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3 flex-shrink-0" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe)">
+                <svg style="width:17px;height:17px" fill="none" viewBox="0 0 24 24" stroke="#2563eb" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
               </div>
-              <p class="font-semibold text-sm text-slate-900 dark:text-slate-100 mb-0.5 group-hover:text-primary-700 dark:group-hover:text-primary-400">Invite teammates</p>
-              <p class="text-xs text-slate-500">Add members to your org</p>
+              <p class="font-bold text-sm text-slate-900 dark:text-slate-100 mb-0.5 group-hover:text-blue-700 dark:group-hover:text-blue-400">Invite teammates</p>
+              <p class="text-xs text-slate-400 leading-relaxed">Add members and assign roles to your workspace.</p>
             </a>
 
             <a href="{% url 'billing:pricing' %}"
-               class="flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md transition-all group">
-              <div class="w-9 h-9 bg-emerald-100 dark:bg-emerald-950 rounded-xl flex items-center justify-center mb-3">
-                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="1.75">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                </svg>
+               class="group relative flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-lg transition-all shadow-[0_1px_8px_-2px_rgb(0,0,0,.06)] overflow-hidden">
+              <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style="background:linear-gradient(135deg,rgba(16,185,129,.04),transparent)"></div>
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3 flex-shrink-0" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0)">
+                <svg style="width:17px;height:17px" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
               </div>
-              <p class="font-semibold text-sm text-slate-900 dark:text-slate-100 mb-0.5 group-hover:text-primary-700 dark:group-hover:text-primary-400">Explore plans</p>
-              <p class="text-xs text-slate-500">Upgrade when you're ready</p>
+              <p class="font-bold text-sm text-slate-900 dark:text-slate-100 mb-0.5 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">Explore plans</p>
+              <p class="text-xs text-slate-400 leading-relaxed">Upgrade for unlimited members, SSO, and priority support.</p>
             </a>
 
-            <a href="/api/docs/" target="_blank" rel="noopener"
-               class="flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md transition-all group">
-              <div class="w-9 h-9 bg-violet-100 dark:bg-violet-950 rounded-xl flex items-center justify-center mb-3">
-                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="1.75">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
+            <a href="{{ swagger_url }}" target="_blank" rel="noopener"
+               class="group relative flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-lg transition-all shadow-[0_1px_8px_-2px_rgb(0,0,0,.06)] overflow-hidden">
+              <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style="background:linear-gradient(135deg,rgba(124,58,237,.04),transparent)"></div>
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3 flex-shrink-0" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe)">
+                <svg style="width:17px;height:17px" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
               </div>
-              <p class="font-semibold text-sm text-slate-900 dark:text-slate-100 mb-0.5 group-hover:text-primary-700 dark:group-hover:text-primary-400">Explore API</p>
-              <p class="text-xs text-slate-500">Try the Swagger docs</p>
+              <p class="font-bold text-sm text-slate-900 dark:text-slate-100 mb-0.5 group-hover:text-primary-700 dark:group-hover:text-primary-400">Explore API</p>
+              <p class="text-xs text-slate-400 leading-relaxed">Try the interactive Swagger docs and API reference.</p>
             </a>
 
           </div>
 
-          <!-- Go to dashboard -->
+          <!-- CTA -->
           <form method="post">
             {% csrf_token %}
-            <button type="submit"
-                    class="inline-flex items-center gap-2 px-8 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-primary-500/30 transition-all hover:shadow-xl hover:-translate-y-0.5 min-h-[52px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+            <button type="submit" class="btn-primary text-base px-10 py-3.5" style="min-height:54px;font-size:1rem;border-radius:1rem">
               Go to dashboard
-              <svg style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-              </svg>
+              <svg style="width:18px;height:18px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
             </button>
           </form>
 
-          <p class="text-sm text-slate-400 mt-6">You can update all of this later in <a href="{% url 'organizations:settings' %}" class="text-primary-600 dark:text-primary-400 hover:underline">Organization Settings</a>.</p>
+          <p class="text-xs text-slate-400 mt-6">
+            Update details anytime in
+            <a href="{% url 'organizations:settings' %}" class="text-primary-600 dark:text-primary-400 hover:underline font-medium">Organization Settings</a>.
+          </p>
+        </div>
+        {% endif %}
+
+        <!-- Security notice -->
+        {% if step != "complete" %}
+        <div class="mt-8 flex items-center justify-center gap-2 text-xs text-slate-400">
+          <svg style="width:12px;height:12px;flex-shrink:0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          Encrypted in transit and at rest
+          <span class="text-slate-300 dark:text-slate-700">·</span>
+          <a href="#" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Privacy policy</a>
         </div>
         {% endif %}
 
       </div>
     </div>
-
-    <!-- Footer (non-complete steps) -->
-    {% if step != "complete" %}
-    <div class="py-4 px-8 text-center">
-      <p class="text-xs text-slate-400">All data is encrypted in transit and at rest. <a href="#" class="hover:text-slate-600 underline">Privacy policy</a>.</p>
-    </div>
-    {% endif %}
-
   </main>
-</div>
 
+</div>
 </body>
 </html>
