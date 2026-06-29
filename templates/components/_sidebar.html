@@ -1,3 +1,4 @@
+{% load static %}
 {% url 'accounts:dashboard' as url_dashboard %}
 {% url 'organizations:members' as url_members %}
 {% url 'billing:pricing' as url_billing %}
@@ -6,13 +7,8 @@
 <aside class="w-64 flex-shrink-0 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 h-full">
 
   <!-- Brand -->
-  <div class="flex items-center gap-2.5 px-5 h-16 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
-    <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-sm">
-      <svg class="w-4.5 h-4.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-      </svg>
-    </div>
-    <span class="font-semibold text-slate-900 dark:text-slate-100 text-sm tracking-tight">DjangoForge</span>
+  <div class="flex items-center gap-2.5 px-4 h-16 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
+    <img src="{% static 'images/logo.png' %}" alt="DjangoForge" class="h-8 w-auto object-contain">
   </div>
 
   <!-- Org switcher -->
