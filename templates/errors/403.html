@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}403 — Access Denied{% endblock %}
+{% block content %}
+{% with hide_sidebar=True %}
+<div class="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
+  <div class="text-center max-w-sm">
+    <div class="text-[120px] font-black text-amber-50 dark:text-amber-950 leading-none select-none" aria-hidden="true">403</div>
+    <div class="w-14 h-14 bg-amber-100 dark:bg-amber-950 rounded-2xl flex items-center justify-center mx-auto mb-5 -mt-2">
+      <svg class="w-7 h-7 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Access denied</h1>
+    <p class="text-slate-500 dark:text-slate-400 text-sm mb-8">You don't have permission to access this resource. Contact your organization owner if you think this is a mistake.</p>
+    <div class="flex items-center justify-center gap-3">
+      <a href="javascript:history.back()" class="btn-secondary">← Go back</a>
+      <a href="{% url 'accounts:dashboard' %}" class="btn-primary">Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endwith %}
+{% endblock %}

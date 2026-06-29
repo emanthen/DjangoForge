@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Verify your email — DjangoForge</title>
+  <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f8fafc;padding:40px 20px;">
+  <tr>
+    <td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+
+        <!-- Logo -->
+        <tr>
+          <td align="center" style="padding-bottom:28px;">
+            <table cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="background-color:#7c3aed;border-radius:12px;width:44px;height:44px;text-align:center;vertical-align:middle;">
+                  <span style="color:white;font-weight:700;font-size:18px;line-height:44px;">D</span>
+                </td>
+                <td style="padding-left:10px;vertical-align:middle;">
+                  <span style="font-size:18px;font-weight:700;color:#0f172a;letter-spacing:-0.5px;">DjangoForge</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Card -->
+        <tr>
+          <td style="background-color:#ffffff;border-radius:16px;border:1px solid #e2e8f0;overflow:hidden;">
+
+            <!-- Top accent -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="background:linear-gradient(135deg,#7c3aed,#4f46e5);height:4px;"></td>
+              </tr>
+            </table>
+
+            <!-- Body -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding:40px 40px 32px;">
+              <tr>
+                <td>
+                  <!-- Icon -->
+                  <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+                    <tr>
+                      <td style="background-color:#f5f3ff;border-radius:12px;width:48px;height:48px;text-align:center;vertical-align:middle;">
+                        <span style="font-size:22px;">✉️</span>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#0f172a;line-height:1.3;">Verify your email address</h1>
+                  <p style="margin:0 0 8px;font-size:15px;color:#64748b;line-height:1.6;">Hi {{ user.first_name|default:user.email }},</p>
+                  <p style="margin:0 0 28px;font-size:15px;color:#64748b;line-height:1.6;">Thanks for signing up for DjangoForge! Please verify your email address to activate your account and start building.</p>
+
+                  <!-- CTA Button -->
+                  <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+                    <tr>
+                      <td style="background-color:#7c3aed;border-radius:10px;text-align:center;">
+                        <a href="{{ verification_url }}" style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:10px;">
+                          Verify Email Address →
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Fallback link -->
+                  <p style="margin:0 0 4px;font-size:13px;color:#94a3b8;">Or copy this link into your browser:</p>
+                  <p style="margin:0 0 24px;font-size:12px;color:#7c3aed;word-break:break-all;">{{ verification_url }}</p>
+
+                  <!-- Divider -->
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
+                    <tr><td style="border-top:1px solid #e2e8f0;"></td></tr>
+                  </table>
+
+                  <p style="margin:0;font-size:13px;color:#94a3b8;line-height:1.6;">This link expires in <strong>24 hours</strong>. If you didn't create a DjangoForge account, you can safely ignore this email.</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td align="center" style="padding:24px 0 0;">
+            <p style="margin:0 0 4px;font-size:12px;color:#94a3b8;">Sent by DjangoForge · Open-source Django SaaS Boilerplate</p>
+            <p style="margin:0;font-size:12px;color:#cbd5e1;">© {% now "Y" %} DjangoForge · All rights reserved</p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

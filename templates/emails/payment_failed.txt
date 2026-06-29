@@ -1,0 +1,6 @@
+Payment Failed — DjangoForge
+
+We couldn't process your payment for {{ org.name }}.
+Please update your payment method at /billing/ to keep your subscription active.
+
+— The DjangoForge Team

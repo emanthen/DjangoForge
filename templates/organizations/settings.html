@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Organization Settings — DjangoForge{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl space-y-6">
+
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Organization Settings</h1>
+    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage your organization's details and settings.</p>
+  </div>
+
+  <!-- General settings -->
+  <div class="card">
+    <h2 class="font-semibold text-slate-900 dark:text-slate-100 mb-5 pb-4 border-b border-slate-100 dark:border-slate-800">General</h2>
+    <form method="post" action="{% url 'organizations:settings' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Logo -->
+      <div class="flex items-center gap-4 mb-5 pb-5 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
+          {% if current_org.logo %}
+          <img src="{{ current_org.logo.url }}" class="w-full h-full object-cover" alt="{{ current_org.name }} logo">
+          {% else %}
+          <span class="text-xl font-bold text-slate-500">{{ current_org.name|first|upper }}</span>
+          {% endif %}
+        </div>
+        <div>
+          <p class="text-sm font-medium text-slate-900 dark:text-slate-100 mb-1">Organization logo</p>
+          {{ form.logo }}
+          <p class="text-xs text-slate-400 mt-1.5">PNG or JPG, recommended 256×256px</p>
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Organization name</label>
+        {{ form.name }}
+        {% if form.name.errors %}<p class="text-red-500 text-xs mt-1.5" role="alert">{{ form.name.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="mb-2">
+        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Slug</label>
+        <div class="form-input opacity-60 cursor-not-allowed bg-slate-50 dark:bg-slate-900 font-mono text-sm">{{ current_org.slug }}</div>
+        <p class="text-xs text-slate-400 mt-1.5">Used in URLs. Cannot be changed after creation.</p>
+      </div>
+
+      <div class="flex justify-end pt-5 mt-4 border-t border-slate-100 dark:border-slate-800">
+        <button type="submit" class="btn-primary">Save changes</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Organization info -->
+  <div class="card">
+    <h2 class="font-semibold text-slate-900 dark:text-slate-100 mb-4">Organization Info</h2>
+    <dl class="space-y-3 text-sm">
+      <div class="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+        <dt class="text-slate-500 dark:text-slate-400">Created</dt>
+        <dd class="font-medium text-slate-900 dark:text-slate-100">{{ current_org.created_at|date:"M j, Y" }}</dd>
+      </div>
+      <div class="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+        <dt class="text-slate-500 dark:text-slate-400">Plan</dt>
+        <dd>
+          <span class="badge {% if current_org.plan == 'pro' %}badge-amber{% elif current_org.plan == 'starter' %}badge-violet{% else %}badge-gray{% endif %} capitalize">{{ current_org.plan }}</span>
+        </dd>
+      </div>
+      <div class="flex items-center justify-between py-2">
+        <dt class="text-slate-500 dark:text-slate-400">Owner</dt>
+        <dd class="font-medium text-slate-900 dark:text-slate-100">{{ current_org.owner.full_name }}</dd>
+      </div>
+    </dl>
+  </div>
+
+  <!-- Transfer Ownership -->
+  {% if membership.is_owner %}
+  <div class="card border-amber-200 dark:border-amber-800">
+    <h2 class="font-semibold text-amber-600 dark:text-amber-400 mb-1">Transfer Ownership</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">Transfer this organization to another admin. You will become an admin after the transfer.</p>
+    <a href="{% url 'organizations:transfer_ownership' %}" class="btn-secondary border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950 text-sm">
+      Transfer ownership
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

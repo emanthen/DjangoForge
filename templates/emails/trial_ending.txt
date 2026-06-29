@@ -1,0 +1,7 @@
+Trial Ending Soon — DjangoForge
+
+Your trial for {{ org.name }} ends in {{ days_left }} day{{ days_left|pluralize }}.
+
+Upgrade to keep your features: /billing/
+
+— The DjangoForge Team

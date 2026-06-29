@@ -1,0 +1,7 @@
+Subscription Cancelled — DjangoForge
+
+Your subscription for {{ org.name }} has been cancelled. You're now on the free plan.
+
+To resubscribe, visit: /billing/
+
+— The DjangoForge Team

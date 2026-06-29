@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Invalid Link — DjangoForge{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4">
+  <div class="max-w-md w-full text-center card">
+    <div class="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
+      <svg class="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </div>
+    <h1 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Invalid or expired link</h1>
+    <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">This verification link is invalid or has expired.</p>
+    <a href="{% url 'accounts:signup' %}" class="btn-primary">Sign up again</a>
+  </div>
+</div>
+{% endblock %}

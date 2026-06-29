@@ -1,0 +1,8 @@
+Payment Receipt — DjangoForge
+
+Thank you for your payment for {{ org.name }}.
+Amount: ${{ amount }}
+
+{% if invoice_url %}View invoice: {{ invoice_url }}{% endif %}
+
+— The DjangoForge Team

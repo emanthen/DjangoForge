@@ -1,0 +1,10 @@
+You've been invited to join {{ org.name }} on DjangoForge
+
+{{ invited_by.full_name }} has invited you to join {{ org.name }} as a {{ invitation.role }}.
+
+Accept the invitation here:
+{{ accept_url }}
+
+This invitation expires in 7 days.
+
+— The DjangoForge Team

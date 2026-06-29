@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Delete Account — DjangoForge{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+  <div class="card border-red-200 dark:border-red-800">
+    <h1 class="text-xl font-bold text-red-600 mb-2">Delete Account</h1>
+    <p class="text-gray-600 dark:text-gray-400 text-sm mb-6">
+      This will permanently delete your account. Your email will be anonymized and you will lose access to all organizations.
+      This <strong>cannot be undone</strong>.
+    </p>
+    <form method="post" action="{% url 'accounts:delete_account' %}">
+      {% csrf_token %}
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type DELETE to confirm</label>
+      {{ form.confirm }}
+      {% if form.confirm.errors %}<p class="text-red-500 text-xs mt-1">{{ form.confirm.errors.0 }}</p>{% endif %}
+      <div class="flex gap-3 mt-6">
+        <a href="{% url 'accounts:profile' %}" class="btn-secondary flex-1 text-center">Cancel</a>
+        <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 font-medium">Delete Account</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Billing & Plans — DjangoForge{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl" x-data="{ annual: false }">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Plans &amp; Billing</h1>
+    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Choose the plan that fits your team. Change or cancel at any time.</p>
+  </div>
+
+  <!-- Annual / Monthly toggle -->
+  <div class="flex items-center gap-3 mb-8">
+    <span class="text-sm font-medium text-slate-600 dark:text-slate-400" :class="!annual && 'text-slate-900 dark:text-slate-100 font-semibold'">Monthly</span>
+    <button @click="annual = !annual"
+            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            :class="annual ? 'bg-primary-600' : 'bg-slate-200 dark:bg-slate-700'"
+            role="switch" :aria-checked="annual.toString()">
+      <span class="inline-block h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform"
+            :class="annual ? 'translate-x-6' : 'translate-x-1'"></span>
+    </button>
+    <span class="text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-2" :class="annual && 'text-slate-900 dark:text-slate-100 font-semibold'">
+      Annual
+      <span class="badge badge-green text-xs">Save 20%</span>
+    </span>
+  </div>
+
+  <!-- Plan cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+
+    <!-- Free -->
+    <div class="card flex flex-col relative {% if current_plan == 'free' %}border-primary-300 dark:border-primary-700 ring-1 ring-primary-200 dark:ring-primary-800{% endif %}">
+      {% if current_plan == 'free' %}
+      <div class="absolute -top-3 left-4">
+        <span class="badge badge-violet text-xs px-3 py-1 shadow-sm">Current plan</span>
+      </div>
+      {% endif %}
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base">Free</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">For individuals getting started</p>
+          </div>
+          <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          </div>
+        </div>
+        <div class="mb-5">
+          <div class="flex items-end gap-1">
+            <span class="text-3xl font-bold text-slate-900 dark:text-slate-100 tabular-nums">$0</span>
+            <span class="text-slate-500 dark:text-slate-400 text-sm mb-1">/month</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Free forever</p>
+        </div>
+        <ul class="space-y-2.5 mb-6">
+          {% for feature in "1 organization,Up to 3 team members,Community support,API access" | split:"," %}
+          <li class="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+            <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            {{ feature }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% if current_plan == 'free' %}
+      <button disabled class="btn-secondary w-full opacity-60 cursor-not-allowed">Current plan</button>
+      {% else %}
+      <a href="{% url 'billing:pricing' %}" class="btn-secondary w-full text-center">Downgrade to Free</a>
+      {% endif %}
+    </div>
+
+    <!-- Starter — most popular -->
+    <div class="card flex flex-col relative border-primary-400 dark:border-primary-600 ring-1 ring-primary-300 dark:ring-primary-700 shadow-lg {% if current_plan == 'starter' %}{% endif %}">
+      <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+        {% if current_plan == 'starter' %}
+        <span class="badge badge-violet text-xs px-3 py-1 shadow-sm">Current plan</span>
+        {% else %}
+        <span class="badge badge-violet text-xs px-3 py-1 shadow-sm">Most popular</span>
+        {% endif %}
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base">Starter</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">For growing teams</p>
+          </div>
+          <div class="w-8 h-8 bg-primary-100 dark:bg-primary-950 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+        </div>
+        <div class="mb-5">
+          <div class="flex items-end gap-1">
+            <span class="text-3xl font-bold text-slate-900 dark:text-slate-100 tabular-nums" x-text="annual ? '$23' : '$29'">$29</span>
+            <span class="text-slate-500 dark:text-slate-400 text-sm mb-1">/month</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5" x-show="annual">Billed $276/year (save $72)</p>
+          <p class="text-xs text-slate-400 mt-0.5" x-show="!annual">Billed monthly</p>
+        </div>
+        <ul class="space-y-2.5 mb-6">
+          {% for feature in "Unlimited organizations,Unlimited members,Priority support,API access,Feature flags" | split:"," %}
+          <li class="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+            <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            {{ feature }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% if current_plan == 'starter' %}
+        <form method="post" action="{% url 'billing:portal' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-primary w-full">Manage subscription</button>
+        </form>
+      {% else %}
+      <button class="btn-primary w-full"
+              hx-post="{% url 'billing:checkout' %}"
+              hx-vals='{"price_id": "price_starter_monthly"}'
+              hx-indicator="#checkout-loading"
+              hx-on::after-request="if(event.detail.successful){ const d=JSON.parse(event.detail.xhr.responseText); if(d.checkout_url) window.location.href=d.checkout_url; }">
+        Upgrade to Starter
+      </button>
+      {% endif %}
+    </div>
+
+    <!-- Pro -->
+    <div class="card flex flex-col relative {% if current_plan == 'pro' %}border-amber-300 dark:border-amber-700 ring-1 ring-amber-200 dark:ring-amber-800{% endif %}">
+      {% if current_plan == 'pro' %}
+      <div class="absolute -top-3 left-4">
+        <span class="badge badge-amber text-xs px-3 py-1 shadow-sm">Current plan</span>
+      </div>
+      {% endif %}
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base">Pro</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">For scaling businesses</p>
+          </div>
+          <div class="w-8 h-8 bg-amber-100 dark:bg-amber-950 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          </div>
+        </div>
+        <div class="mb-5">
+          <div class="flex items-end gap-1">
+            <span class="text-3xl font-bold text-slate-900 dark:text-slate-100 tabular-nums" x-text="annual ? '$63' : '$79'">$79</span>
+            <span class="text-slate-500 dark:text-slate-400 text-sm mb-1">/month</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5" x-show="annual">Billed $756/year (save $192)</p>
+          <p class="text-xs text-slate-400 mt-0.5" x-show="!annual">Billed monthly</p>
+        </div>
+        <ul class="space-y-2.5 mb-6">
+          {% for feature in "Everything in Starter,SSO / SAML,Audit log,Custom domains,99.9% SLA,Dedicated support" | split:"," %}
+          <li class="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+            <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            {{ feature }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% if current_plan == 'pro' %}
+        <form method="post" action="{% url 'billing:portal' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-primary w-full">Manage subscription</button>
+        </form>
+      {% else %}
+      <button class="btn-secondary w-full"
+              hx-post="{% url 'billing:checkout' %}"
+              hx-vals='{"price_id": "price_pro_monthly"}'
+              hx-on::after-request="if(event.detail.successful){ const d=JSON.parse(event.detail.xhr.responseText); if(d.checkout_url) window.location.href=d.checkout_url; }">
+        Upgrade to Pro
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div id="checkout-loading" class="htmx-indicator fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl p-6 flex items-center gap-3">
+      <svg class="animate-spin w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+      <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Redirecting to Stripe…</span>
+    </div>
+  </div>
+
+  <!-- Manage billing link -->
+  {% if current_plan != 'free' %}
+  <div class="border-t border-slate-200 dark:border-slate-800 pt-6">
+    <div class="card">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-semibold text-slate-900 dark:text-slate-100 text-sm">Subscription management</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">View invoices, update payment method, or cancel your subscription.</p>
+        </div>
+        <form method="post" action="{% url 'billing:portal' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-secondary text-sm whitespace-nowrap">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            Billing portal
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+Verify your email address — DjangoForge
+
+Hi {{ user.first_name|default:user.email }},
+
+Please verify your email address by clicking the link below:
+
+{{ verification_url }}
+
+This link expires in 24 hours.
+
+If you didn't create an account, please ignore this email.
+
+— The DjangoForge Team

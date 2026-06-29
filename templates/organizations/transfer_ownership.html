@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Transfer Ownership — DjangoForge{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto">
+  <div class="card border-amber-200 dark:border-amber-800">
+    <h1 class="text-xl font-bold text-amber-700 mb-2">Transfer Ownership</h1>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Select a new owner. Your role will become Admin after transfer.</p>
+    <form method="post" action="{% url 'organizations:transfer_ownership' %}">
+      {% csrf_token %}
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New owner</label>
+        {{ form.new_owner }}
+      </div>
+      <div class="flex gap-3">
+        <a href="{% url 'organizations:settings' %}" class="btn-secondary flex-1 text-center">Cancel</a>
+        <button type="submit" class="flex-1 bg-amber-600 text-white py-2 rounded-lg hover:bg-amber-700 font-medium">Transfer</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

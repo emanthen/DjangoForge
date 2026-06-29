@@ -1,0 +1,16 @@
+{% if page_obj.has_other_pages %}
+<div class="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
+  <p class="text-sm text-gray-700 dark:text-gray-400">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    ({{ page_obj.paginator.count }} total)
+  </p>
+  <div class="flex gap-2">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}" class="btn-secondary text-sm py-1 px-3">Previous</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="btn-secondary text-sm py-1 px-3">Next</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
