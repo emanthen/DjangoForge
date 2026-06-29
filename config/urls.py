@@ -18,17 +18,12 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    import debug_toolbar
-
-    urlpatterns += [path("__debug__/", include(debug_toolbar.urls))]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    if "debug_toolbar" in settings.INSTALLED_APPS:
+        import debug_toolbar
+        urlpatterns += [path("__debug__/", include(debug_toolbar.urls))]
 
 handler404 = "apps.api.views.handler404"
 handler500 = "apps.api.views.handler500"
 handler403 = "apps.api.views.handler403"
 
-# Redirect root to dashboard or login
-from django.views.generic import RedirectView
-urlpatterns += [
-    path("", RedirectView.as_view(pattern_name="accounts:dashboard"), name="home"),
-]

@@ -133,6 +133,28 @@ class ChangePasswordRedirectView(LoginRequiredMixin, View):
         return redirect("/accounts/password/change/")
 
 
+class HomeView(TemplateView):
+    template_name = "home.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("accounts:dashboard")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["features"] = [
+            {"title": "Authentication", "desc": "Email/password, Google & GitHub OAuth, email verification, brute-force protection.", "icon": "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", "bg": "bg-violet-50 dark:bg-violet-950", "color": "text-violet-600"},
+            {"title": "Multi-tenancy", "desc": "Organizations, roles (owner/admin/member), invitations, and automatic row-level data scoping.", "icon": "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z", "bg": "bg-blue-50 dark:bg-blue-950", "color": "text-blue-600"},
+            {"title": "Stripe Billing", "desc": "Hosted Checkout, Customer Portal, webhook handling with signature verification and deduplication.", "icon": "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z", "bg": "bg-green-50 dark:bg-green-950", "color": "text-green-600"},
+            {"title": "REST API + Docs", "desc": "DRF API with OpenAPI schema, Swagger UI, ReDoc, and session/token authentication.", "icon": "M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z", "bg": "bg-amber-50 dark:bg-amber-950", "color": "text-amber-600"},
+            {"title": "Feature Flags", "desc": "Database-backed flags with percentage rollout, per-org/user targeting, and template integration.", "icon": "M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9", "bg": "bg-rose-50 dark:bg-rose-950", "color": "text-rose-600"},
+            {"title": "AWS + Terraform", "desc": "One-command deploy to ECS Fargate with RDS, ElastiCache, ALB, S3, and CloudWatch.", "icon": "M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z", "bg": "bg-orange-50 dark:bg-orange-950", "color": "text-orange-600"},
+        ]
+        ctx["stack"] = ["Python 3.12", "Django 5.2 LTS", "PostgreSQL 16", "Redis 7", "Celery 5", "Stripe", "HTMX", "Alpine.js", "Tailwind CSS 4", "Docker", "Terraform", "GitHub Actions"]
+        return ctx
+
+
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "dashboard/index.html"
 
