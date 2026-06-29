@@ -26,6 +26,31 @@ class Organization(models.Model):
         (PLAN_ENTERPRISE, "Enterprise"),
     ]
 
+    INDUSTRY_CHOICES = [
+        ("technology", "Technology & Software"),
+        ("finance", "Finance & Banking"),
+        ("healthcare", "Healthcare"),
+        ("education", "Education"),
+        ("ecommerce", "E-Commerce & Retail"),
+        ("media", "Media & Entertainment"),
+        ("manufacturing", "Manufacturing"),
+        ("real_estate", "Real Estate"),
+        ("legal", "Legal & Professional Services"),
+        ("government", "Government"),
+        ("nonprofit", "Non-Profit"),
+        ("consulting", "Consulting & Services"),
+        ("other", "Other"),
+    ]
+
+    SIZE_CHOICES = [
+        ("1", "Just me"),
+        ("2_10", "2–10 employees"),
+        ("11_50", "11–50 employees"),
+        ("51_200", "51–200 employees"),
+        ("201_500", "201–500 employees"),
+        ("501_plus", "501+ employees"),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
@@ -39,6 +64,23 @@ class Organization(models.Model):
     trial_ends_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     logo = models.ImageField(upload_to="org_logos/", blank=True, null=True)
+    # Company profile
+    industry = models.CharField(max_length=50, blank=True, choices=INDUSTRY_CHOICES)
+    company_size = models.CharField(max_length=20, blank=True, choices=SIZE_CHOICES)
+    website = models.URLField(blank=True)
+    description = models.TextField(blank=True)
+    # Contact & registration
+    phone = models.CharField(max_length=30, blank=True)
+    support_email = models.EmailField(blank=True)
+    address_line1 = models.CharField(max_length=200, blank=True)
+    address_line2 = models.CharField(max_length=200, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    postal_code = models.CharField(max_length=20, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    registration_number = models.CharField(max_length=100, blank=True)
+    # Onboarding
+    onboarding_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

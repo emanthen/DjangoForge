@@ -10,6 +10,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_("email address"), unique=True)
     first_name = models.CharField(_("first name"), max_length=150, blank=True)
     last_name = models.CharField(_("last name"), max_length=150, blank=True)
+    job_title = models.CharField(max_length=100, blank=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

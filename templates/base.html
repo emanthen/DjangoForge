@@ -139,7 +139,7 @@
 
 {% include "components/_flash_messages.html" %}
 
-{% if request.user.is_authenticated and not hide_sidebar|default:False %}
+{% if request.user.is_authenticated %}
 <div class="flex h-screen overflow-hidden">
 
   <!-- Desktop sidebar -->
@@ -160,13 +160,13 @@
     {% include "components/_navbar.html" %}
     <main class="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950">
       <div class="px-4 py-6 sm:px-6 lg:px-8">
+{% endif %}
         {% block content %}{% endblock %}
+{% if request.user.is_authenticated %}
       </div>
     </main>
   </div>
 </div>
-{% else %}
-{% block content %}{% endblock %}
 {% endif %}
 
 <script>

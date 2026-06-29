@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
@@ -11,6 +11,9 @@ from django.views.generic import CreateView, FormView, ListView, TemplateView, U
 from apps.audit.utils import log_event
 from apps.organizations.forms import (
     InviteMemberForm,
+    OnboardingContactForm,
+    OnboardingOrgForm,
+    OnboardingProfileForm,
     OrganizationForm,
     TransferOwnershipForm,
 )
@@ -19,6 +22,16 @@ from apps.organizations.models import Invitation, Membership, Organization
 from apps.organizations.utils import send_invitation_email
 
 User = get_user_model()
+
+
+ONBOARDING_STEPS = ["organization", "contact", "profile", "api", "complete"]
+ONBOARDING_STEP_LABELS = [
+    ("organization", "Company Details"),
+    ("contact", "Contact Info"),
+    ("profile", "Your Profile"),
+    ("api", "API & Settings"),
+    ("complete", "All Done!"),
+]
 
 
 class CreateOrgView(LoginRequiredMixin, CreateView):
@@ -32,9 +45,111 @@ class CreateOrgView(LoginRequiredMixin, CreateView):
         org.save()
         Membership.objects.create(user=self.request.user, org=org, role=Membership.ROLE_OWNER)
         self.request.session["active_org_id"] = str(org.id)
+        self.request.session["onboarding_step"] = "organization"
         log_event("org.created", request=self.request, actor=self.request.user, org=org)
         messages.success(self.request, f'Organization "{org.name}" created successfully.')
-        return redirect(self.success_url)
+        return redirect("onboarding:index")
+
+
+class OnboardingView(LoginRequiredMixin, View):
+    login_url = "/login/"
+
+    def _get_org(self, request):
+        return getattr(request, "org", None)
+
+    def _get_step(self, request):
+        step = request.GET.get("step") or request.session.get("onboarding_step", "organization")
+        return step if step in ONBOARDING_STEPS else "organization"
+
+    def _context(self, request, org, step, extra=None):
+        idx = ONBOARDING_STEPS.index(step)
+        ctx = {
+            "step": step,
+            "steps": ONBOARDING_STEP_LABELS,
+            "step_index": idx,
+            "total_steps": len(ONBOARDING_STEPS),
+            "progress_pct": int(idx / (len(ONBOARDING_STEPS) - 1) * 100),
+            "org": org,
+            "request": request,
+            "api_base": request.build_absolute_uri("/api/"),
+            "swagger_url": request.build_absolute_uri("/api/docs/"),
+        }
+        if extra:
+            ctx.update(extra)
+        return ctx
+
+    def _advance(self, request, next_step):
+        request.session["onboarding_step"] = next_step
+        return redirect("onboarding:index")
+
+    def get(self, request):
+        org = self._get_org(request)
+        if not org:
+            return redirect("organizations:create")
+        if org.onboarding_completed:
+            return redirect("accounts:dashboard")
+
+        step = self._get_step(request)
+        request.session["onboarding_step"] = step
+
+        form = None
+        if step == "organization":
+            form = OnboardingOrgForm(instance=org)
+        elif step == "contact":
+            form = OnboardingContactForm(instance=org)
+        elif step == "profile":
+            form = OnboardingProfileForm(initial={
+                "first_name": request.user.first_name,
+                "last_name": request.user.last_name,
+                "job_title": getattr(request.user, "job_title", ""),
+            })
+
+        return render(request, "onboarding/index.html", self._context(request, org, step, {"form": form}))
+
+    def post(self, request):
+        org = self._get_org(request)
+        if not org:
+            return redirect("organizations:create")
+        if org.onboarding_completed:
+            return redirect("accounts:dashboard")
+
+        step = request.session.get("onboarding_step", "organization")
+
+        if step == "organization":
+            form = OnboardingOrgForm(request.POST, instance=org)
+            if form.is_valid():
+                form.save()
+                return self._advance(request, "contact")
+            return render(request, "onboarding/index.html", self._context(request, org, step, {"form": form}))
+
+        elif step == "contact":
+            form = OnboardingContactForm(request.POST, instance=org)
+            if form.is_valid():
+                form.save()
+                return self._advance(request, "profile")
+            return render(request, "onboarding/index.html", self._context(request, org, step, {"form": form}))
+
+        elif step == "profile":
+            form = OnboardingProfileForm(request.POST)
+            if form.is_valid():
+                request.user.first_name = form.cleaned_data.get("first_name", "")
+                request.user.last_name = form.cleaned_data.get("last_name", "")
+                request.user.job_title = form.cleaned_data.get("job_title", "")
+                request.user.save(update_fields=["first_name", "last_name", "job_title"])
+                return self._advance(request, "api")
+            return render(request, "onboarding/index.html", self._context(request, org, step, {"form": form}))
+
+        elif step == "api":
+            return self._advance(request, "complete")
+
+        elif step == "complete":
+            org.onboarding_completed = True
+            org.save(update_fields=["onboarding_completed"])
+            request.session.pop("onboarding_step", None)
+            log_event("org.onboarding_completed", request=request, actor=request.user, org=org)
+            return redirect("accounts:dashboard")
+
+        return redirect("onboarding:index")
 
 
 class OrgSettingsView(OrgAdminMixin, UpdateView):

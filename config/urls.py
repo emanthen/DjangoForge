@@ -3,9 +3,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from apps.organizations.views import OnboardingView
+
 admin.site.site_header = "DjangoForge Admin"
 admin.site.site_title = "DjangoForge"
 admin.site.index_title = "Administration"
+
+_onboarding = ([path("", OnboardingView.as_view(), name="index")], "onboarding")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -15,6 +19,7 @@ urlpatterns = [
     path("api/", include("apps.api.urls")),
     path("accounts/", include("allauth.urls")),
     path("hijack/", include("hijack.urls")),
+    path("onboarding/", include(_onboarding)),
 ]
 
 if settings.DEBUG:

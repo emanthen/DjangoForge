@@ -158,6 +158,14 @@ class HomeView(TemplateView):
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "dashboard/index.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        org = getattr(request, "org", None)
+        if org and not org.onboarding_completed:
+            return redirect("onboarding:index")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         from datetime import datetime
         from apps.audit.models import AuditEvent

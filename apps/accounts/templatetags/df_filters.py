@@ -4,6 +4,11 @@ register = template.Library()
 
 
 @register.filter
+def split(value, delimiter=","):
+    return str(value).split(delimiter)
+
+
+@register.filter
 def humanize_action(value):
     """Convert 'user.email_verified' → 'User Email Verified'"""
     return str(value).replace("_", " ").replace(".", " ").title()

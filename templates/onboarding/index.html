@@ -1,0 +1,657 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en" class="h-full antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>
+    {% if step == "complete" %}Welcome to DjangoForge!{% else %}Setup your workspace — DjangoForge{% endif %}
+  </title>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
+              400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
+              800: '#5b21b6', 900: '#4c1d95', 950: '#2e1065',
+            },
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.4s ease-out',
+            'slide-up': 'slideUp 0.4s ease-out',
+            'bounce-in': 'bounceIn 0.6s ease-out',
+          },
+          keyframes: {
+            fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
+            slideUp: { from: { opacity: '0', transform: 'translateY(16px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+            bounceIn: { '0%': { opacity: '0', transform: 'scale(0.8)' }, '60%': { transform: 'scale(1.05)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+          },
+        },
+      },
+    };
+  </script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .form-input {
+      @apply w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm placeholder-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 dark:focus:border-primary-500 dark:focus:ring-primary-900/30;
+    }
+    .form-input.h-24 { height: 6rem; }
+    .form-label { @apply block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5; }
+    .form-helper { @apply text-xs text-slate-400 dark:text-slate-500 mt-1; }
+    .form-error { @apply text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1; }
+    .step-done { @apply w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0; }
+    .step-active { @apply w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0 ring-4 ring-primary-500/30; }
+    .step-pending { @apply w-8 h-8 rounded-full border-2 border-slate-600 flex items-center justify-center flex-shrink-0; }
+    .size-card { @apply cursor-pointer rounded-xl border-2 border-slate-200 dark:border-slate-700 p-3 text-center transition-all duration-150 hover:border-primary-400 dark:hover:border-primary-500; }
+    .size-card.selected { @apply border-primary-500 bg-primary-50 dark:border-primary-500 dark:bg-primary-950; }
+  </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+
+<div class="flex min-h-full">
+
+  <!-- ── Left sidebar (desktop) ───────────────────────────── -->
+  <aside class="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 bg-slate-900 dark:bg-black flex-shrink-0 p-8 relative overflow-hidden">
+    <!-- Ambient glow -->
+    <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+      <div class="absolute top-0 left-0 w-64 h-64 bg-primary-700/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+      <div class="absolute bottom-0 right-0 w-48 h-48 bg-violet-700/15 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+    </div>
+
+    <div class="relative z-10 flex flex-col h-full">
+      <!-- Logo -->
+      <div class="mb-10">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <span class="text-white font-bold text-lg tracking-tight">DjangoForge</span>
+        </div>
+      </div>
+
+      <!-- Step progress -->
+      <div class="flex-1">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">Setup Progress</p>
+
+        {% for step_key, step_label in steps %}
+        {% with forloop.counter0 as idx %}
+        <div class="flex items-start gap-3 mb-5 {% if step_key == step %}opacity-100{% elif idx < step_index %}opacity-80{% else %}opacity-40{% endif %} transition-opacity duration-200">
+          <!-- Circle indicator -->
+          {% if idx < step_index %}
+          <div class="step-done">
+            <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          {% elif step_key == step %}
+          <div class="step-active">
+            <span class="text-white text-xs font-bold">{{ forloop.counter }}</span>
+          </div>
+          {% else %}
+          <div class="step-pending">
+            <span class="text-slate-500 text-xs font-medium">{{ forloop.counter }}</span>
+          </div>
+          {% endif %}
+
+          <!-- Label -->
+          <div class="pt-1">
+            <p class="text-sm font-medium {% if step_key == step %}text-white{% elif idx < step_index %}text-slate-300{% else %}text-slate-500{% endif %}">{{ step_label }}</p>
+            {% if step_key == "organization" and step_key == step %}<p class="text-xs text-slate-500 mt-0.5">Name, industry, size</p>{% endif %}
+            {% if step_key == "contact" and step_key == step %}<p class="text-xs text-slate-500 mt-0.5">Address, phone, email</p>{% endif %}
+            {% if step_key == "profile" and step_key == step %}<p class="text-xs text-slate-500 mt-0.5">Name, role, title</p>{% endif %}
+            {% if step_key == "api" and step_key == step %}<p class="text-xs text-slate-500 mt-0.5">Endpoint, auth, docs</p>{% endif %}
+          </div>
+        </div>
+
+        {% if not forloop.last %}
+        <div class="ml-4 mb-2 w-px h-3 {% if idx < step_index %}bg-emerald-600{% else %}bg-slate-700{% endif %} -mt-2"></div>
+        {% endif %}
+        {% endwith %}
+        {% endfor %}
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-6 pt-6 border-t border-slate-800">
+        <p class="text-slate-500 text-xs flex items-center gap-2">
+          <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Takes about 3 minutes
+        </p>
+        <p class="text-slate-600 text-xs mt-2">You can update everything later in Settings.</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Right content area ───────────────────────────────── -->
+  <main class="flex-1 flex flex-col min-h-full" x-data="{}">
+
+    <!-- Mobile header -->
+    <div class="lg:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-3 sticky top-0 z-10">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-primary-600 rounded-md flex items-center justify-center">
+            <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <span class="font-bold text-sm">DjangoForge</span>
+        </div>
+        <span class="text-xs text-slate-500">Step {{ step_index|add:1 }} of {{ total_steps }}</span>
+      </div>
+      <!-- Mobile progress bar -->
+      <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+        <div class="bg-primary-600 h-1.5 rounded-full transition-all duration-500" style="width: {{ progress_pct }}%"></div>
+      </div>
+    </div>
+
+    <!-- Form area -->
+    <div class="flex-1 flex flex-col items-center justify-center px-4 py-10 sm:px-8">
+      <div class="w-full max-w-xl animate-slide-up">
+
+        {% if step != "complete" %}
+        <!-- Step number (desktop only) -->
+        <div class="hidden lg:flex items-center gap-2 mb-6">
+          <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-950 border border-primary-200 dark:border-primary-800 px-2.5 py-1 rounded-full">
+            <span class="w-4 h-4 bg-primary-600 text-white rounded-full inline-flex items-center justify-center text-[10px] font-bold">{{ step_index|add:1 }}</span>
+            Step {{ step_index|add:1 }} of {{ total_steps }}
+          </span>
+        </div>
+        {% endif %}
+
+        <!-- ══ STEP: organization ══════════════════════════════ -->
+        {% if step == "organization" %}
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50 mb-1">Tell us about your company</h1>
+          <p class="text-slate-500 dark:text-slate-400 mb-8">Help us personalize your experience. You can change this anytime.</p>
+
+          <form method="post" autocomplete="on" x-data="{ loading: false }" @submit="loading = true" novalidate>
+            {% csrf_token %}
+            <div class="space-y-5">
+
+              <!-- Company name -->
+              <div>
+                <label for="id_name" class="form-label">
+                  Company name <span class="text-red-500" aria-hidden="true">*</span>
+                </label>
+                <input type="text" name="name" id="id_name"
+                       class="form-input{% if form.name.errors %} border-red-400 focus:border-red-400 focus:ring-red-100{% endif %}"
+                       value="{{ form.name.value|default:'' }}"
+                       placeholder="Acme Inc." autocomplete="organization" required>
+                {% if form.name.errors %}
+                <p class="form-error" role="alert">
+                  <svg style="width:12px;height:12px;" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  {{ form.name.errors.0 }}
+                </p>
+                {% endif %}
+              </div>
+
+              <!-- Industry -->
+              <div>
+                <label for="id_industry" class="form-label">Industry</label>
+                <select name="industry" id="id_industry" class="form-input">
+                  {% for value, label in form.fields.industry.choices %}
+                  <option value="{{ value }}" {% if form.industry.value == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Company size — visual radio cards -->
+              <div>
+                <label class="form-label">Company size</label>
+                <input type="hidden" name="company_size" id="company_size_hidden" value="{{ form.company_size.value|default:'' }}">
+                <div class="grid grid-cols-3 gap-2" x-data="{ selected: '{{ form.company_size.value|default:'' }}' }"
+                     x-init="$watch('selected', v => document.getElementById('company_size_hidden').value = v)">
+                  {% for value, label in form.fields.company_size.choices %}
+                  {% if value %}
+                  <button type="button"
+                          class="size-card text-xs sm:text-sm"
+                          :class="selected === '{{ value }}' ? 'selected' : ''"
+                          @click="selected = '{{ value }}'">
+                    <span class="block font-medium text-slate-700 dark:text-slate-300">{{ label }}</span>
+                  </button>
+                  {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- Website -->
+              <div>
+                <label for="id_website" class="form-label">Website <span class="text-slate-400 font-normal">(optional)</span></label>
+                <input type="url" name="website" id="id_website" class="form-input"
+                       value="{{ form.website.value|default:'' }}"
+                       placeholder="https://yourcompany.com" autocomplete="url">
+              </div>
+
+              <!-- Description -->
+              <div>
+                <label for="id_description" class="form-label">What does your company do? <span class="text-slate-400 font-normal">(optional)</span></label>
+                <textarea name="description" id="id_description" rows="3"
+                          class="form-input resize-none"
+                          placeholder="Briefly describe your company…">{{ form.description.value|default:'' }}</textarea>
+                <p class="form-helper">This helps us tailor your experience.</p>
+              </div>
+
+            </div>
+
+            <!-- Nav buttons -->
+            <div class="flex items-center justify-end mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+              <button type="submit"
+                      class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl shadow-sm transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                      :disabled="loading">
+                <span x-show="!loading">Continue</span>
+                <span x-show="loading" x-cloak class="flex items-center gap-2">
+                  <svg class="animate-spin" style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Saving…
+                </span>
+                <svg x-show="!loading" style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ══ STEP: contact ══════════════════════════════════ -->
+        {% elif step == "contact" %}
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50 mb-1">Contact & registration</h1>
+          <p class="text-slate-500 dark:text-slate-400 mb-8">Used for billing, legal compliance, and support. All fields are optional.</p>
+
+          <form method="post" autocomplete="on" x-data="{ loading: false }" @submit="loading = true">
+            {% csrf_token %}
+            <div class="space-y-5">
+
+              <!-- Phone + Support email row -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="id_phone" class="form-label">Business phone</label>
+                  <input type="tel" name="phone" id="id_phone" class="form-input"
+                         value="{{ form.phone.value|default:'' }}"
+                         placeholder="+1 (555) 000-0000" autocomplete="tel">
+                </div>
+                <div>
+                  <label for="id_support_email" class="form-label">Support email</label>
+                  <input type="email" name="support_email" id="id_support_email" class="form-input"
+                         value="{{ form.support_email.value|default:'' }}"
+                         placeholder="support@company.com" autocomplete="email">
+                </div>
+              </div>
+
+              <!-- Address -->
+              <div>
+                <label for="id_address_line1" class="form-label">Address line 1</label>
+                <input type="text" name="address_line1" id="id_address_line1" class="form-input"
+                       value="{{ form.address_line1.value|default:'' }}"
+                       placeholder="123 Main Street" autocomplete="address-line1">
+              </div>
+
+              <div>
+                <label for="id_address_line2" class="form-label">Address line 2 <span class="text-slate-400 font-normal">(optional)</span></label>
+                <input type="text" name="address_line2" id="id_address_line2" class="form-input"
+                       value="{{ form.address_line2.value|default:'' }}"
+                       placeholder="Suite 400, Floor 3…" autocomplete="address-line2">
+              </div>
+
+              <!-- City / State / Postal -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div class="col-span-2 sm:col-span-1">
+                  <label for="id_city" class="form-label">City</label>
+                  <input type="text" name="city" id="id_city" class="form-input"
+                         value="{{ form.city.value|default:'' }}"
+                         placeholder="San Francisco" autocomplete="address-level2">
+                </div>
+                <div>
+                  <label for="id_state" class="form-label">State / Region</label>
+                  <input type="text" name="state" id="id_state" class="form-input"
+                         value="{{ form.state.value|default:'' }}"
+                         placeholder="CA" autocomplete="address-level1">
+                </div>
+                <div>
+                  <label for="id_postal_code" class="form-label">Postal code</label>
+                  <input type="text" name="postal_code" id="id_postal_code" class="form-input"
+                         value="{{ form.postal_code.value|default:'' }}"
+                         placeholder="94107" autocomplete="postal-code">
+                </div>
+              </div>
+
+              <!-- Country -->
+              <div>
+                <label for="id_country" class="form-label">Country</label>
+                <select name="country" id="id_country" class="form-input">
+                  {% for value, label in form.fields.country.choices %}
+                  <option value="{{ value }}" {% if form.country.value == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Registration number -->
+              <div>
+                <label for="id_registration_number" class="form-label">Company registration number <span class="text-slate-400 font-normal">(optional)</span></label>
+                <input type="text" name="registration_number" id="id_registration_number" class="form-input"
+                       value="{{ form.registration_number.value|default:'' }}"
+                       placeholder="EIN, VAT, Company #…">
+                <p class="form-helper">Used for invoices. Leave blank if not applicable.</p>
+              </div>
+
+            </div>
+
+            <!-- Nav buttons -->
+            <div class="flex items-center justify-between mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+              <a href="?step=organization"
+                 class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-slate-300">
+                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back
+              </a>
+              <button type="submit"
+                      class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl shadow-sm transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                      :disabled="loading">
+                <span x-show="!loading">Continue</span>
+                <span x-show="loading" x-cloak class="flex items-center gap-2">
+                  <svg class="animate-spin" style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Saving…
+                </span>
+                <svg x-show="!loading" style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ══ STEP: profile ══════════════════════════════════ -->
+        {% elif step == "profile" %}
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50 mb-1">Set up your profile</h1>
+          <p class="text-slate-500 dark:text-slate-400 mb-8">Let your teammates know who you are.</p>
+
+          <!-- Avatar placeholder -->
+          <div class="flex items-center gap-4 mb-8 p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary-500 to-violet-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0" id="avatar-preview">
+              {{ request.user.email|first|upper }}
+            </div>
+            <div class="min-w-0">
+              <p class="font-medium text-slate-900 dark:text-slate-100 truncate" id="name-preview">{{ request.user.email }}</p>
+              <p class="text-sm text-slate-500 dark:text-slate-400">{{ request.user.email }}</p>
+            </div>
+          </div>
+
+          <form method="post" autocomplete="on" x-data="{ loading: false, first: '{{ form.first_name.value|default:'' }}', last: '{{ form.last_name.value|default:'' }}' }" @submit="loading = true">
+            {% csrf_token %}
+            <div class="space-y-5">
+
+              <!-- First + Last name row -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="id_first_name" class="form-label">
+                    First name <span class="text-red-500" aria-hidden="true">*</span>
+                  </label>
+                  <input type="text" name="first_name" id="id_first_name" class="form-input{% if form.first_name.errors %} border-red-400{% endif %}"
+                         x-model="first"
+                         value="{{ form.first_name.value|default:'' }}"
+                         placeholder="Jane" autocomplete="given-name" required>
+                  {% if form.first_name.errors %}<p class="form-error" role="alert">{{ form.first_name.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                  <label for="id_last_name" class="form-label">Last name</label>
+                  <input type="text" name="last_name" id="id_last_name" class="form-input"
+                         x-model="last"
+                         value="{{ form.last_name.value|default:'' }}"
+                         placeholder="Smith" autocomplete="family-name">
+                </div>
+              </div>
+
+              <!-- Job title -->
+              <div>
+                <label for="id_job_title" class="form-label">Job title</label>
+                <input type="text" name="job_title" id="id_job_title" class="form-input"
+                       value="{{ form.job_title.value|default:'' }}"
+                       placeholder="CTO, Product Manager, Full-Stack Developer…"
+                       autocomplete="organization-title">
+                <p class="form-helper">Visible to your organization members.</p>
+              </div>
+
+            </div>
+
+            <!-- Nav buttons -->
+            <div class="flex items-center justify-between mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+              <a href="?step=contact"
+                 class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-slate-300">
+                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back
+              </a>
+              <button type="submit"
+                      class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl shadow-sm transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                      :disabled="loading">
+                <span x-show="!loading">Continue</span>
+                <span x-show="loading" x-cloak class="flex items-center gap-2">
+                  <svg class="animate-spin" style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Saving…
+                </span>
+                <svg x-show="!loading" style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ══ STEP: api ══════════════════════════════════════ -->
+        {% elif step == "api" %}
+        <div x-data="{ copied: false }">
+          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50 mb-1">API & developer settings</h1>
+          <p class="text-slate-500 dark:text-slate-400 mb-8">Connect your apps using the DjangoForge REST API.</p>
+
+          <div class="space-y-5">
+
+            <!-- API base URL -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-950 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                  </div>
+                  <h3 class="font-semibold text-sm text-slate-900 dark:text-slate-100">Base API URL</h3>
+                </div>
+                <button type="button"
+                        @click="navigator.clipboard.writeText('{{ api_base }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                        class="flex-shrink-0 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 min-h-[32px] px-3 py-1 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-950 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-300">
+                  <span x-show="!copied">Copy</span>
+                  <span x-show="copied" x-cloak class="text-emerald-600">Copied!</span>
+                </button>
+              </div>
+              <code class="block bg-slate-50 dark:bg-slate-950 rounded-lg p-3 text-sm text-slate-700 dark:text-slate-300 font-mono break-all select-all border border-slate-200 dark:border-slate-800">{{ api_base }}</code>
+            </div>
+
+            <!-- Authentication -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+              <div class="flex items-center gap-2.5 mb-3">
+                <div class="w-8 h-8 bg-amber-100 dark:bg-amber-950 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="#d97706" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                  </svg>
+                </div>
+                <h3 class="font-semibold text-sm text-slate-900 dark:text-slate-100">Authentication</h3>
+              </div>
+              <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">The API uses session-based authentication. Include your session cookie in requests after logging in.</p>
+              <code class="block bg-slate-50 dark:bg-slate-950 rounded-lg p-3 text-xs text-slate-700 dark:text-slate-300 font-mono border border-slate-200 dark:border-slate-800 whitespace-pre-wrap">curl {{ api_base }}me/ \
+  -H "Cookie: sessionid=YOUR_SESSION"</code>
+            </div>
+
+            <!-- Links -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <a href="{{ swagger_url }}" target="_blank" rel="noopener"
+                 class="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 transition-colors group">
+                <div class="w-9 h-9 bg-primary-100 dark:bg-primary-950 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="1.75">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-primary-700 dark:group-hover:text-primary-400">Swagger UI</p>
+                  <p class="text-xs text-slate-500">Interactive API explorer</p>
+                </div>
+                <svg style="width:14px;height:14px;" class="ml-auto text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+              </a>
+
+              <a href="https://github.com/emanthen/DjangoForge/blob/main/docs/api.md" target="_blank" rel="noopener"
+                 class="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 transition-colors group">
+                <div class="w-9 h-9 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg style="width:16px;height:16px;" fill="currentColor" viewBox="0 0 24 24" class="text-slate-700 dark:text-slate-300">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-primary-700 dark:group-hover:text-primary-400">API Docs</p>
+                  <p class="text-xs text-slate-500">Full reference on GitHub</p>
+                </div>
+                <svg style="width:14px;height:14px;" class="ml-auto text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+              </a>
+            </div>
+
+          </div>
+
+          <!-- Nav buttons -->
+          <form method="post">
+            {% csrf_token %}
+            <div class="flex items-center justify-between mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+              <a href="?step=profile"
+                 class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-slate-300">
+                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back
+              </a>
+              <button type="submit"
+                      class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl shadow-sm transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                Finish setup
+                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ══ STEP: complete ═════════════════════════════════ -->
+        {% elif step == "complete" %}
+        <div class="text-center animate-bounce-in">
+          <!-- Celebration icon -->
+          <div class="relative inline-flex items-center justify-center mb-6">
+            <div class="w-24 h-24 bg-gradient-to-br from-primary-500 to-violet-600 rounded-3xl flex items-center justify-center shadow-xl shadow-primary-500/30">
+              <svg style="width:40px;height:40px;" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <!-- Decorative dots -->
+            <div class="absolute -top-2 -right-2 w-4 h-4 bg-amber-400 rounded-full animate-bounce" style="animation-delay:0.1s"></div>
+            <div class="absolute -bottom-1 -left-3 w-3 h-3 bg-emerald-400 rounded-full animate-bounce" style="animation-delay:0.3s"></div>
+            <div class="absolute top-0 -left-4 w-2 h-2 bg-pink-400 rounded-full animate-bounce" style="animation-delay:0.5s"></div>
+          </div>
+
+          <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-50 mb-3">
+            You're all set! 🎉
+          </h1>
+          <p class="text-slate-500 dark:text-slate-400 text-lg mb-10 max-w-md mx-auto">
+            <strong class="text-slate-700 dark:text-slate-300">{{ org.name }}</strong> is ready to go. Here are some things to do next.
+          </p>
+
+          <!-- Quick action cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10 text-left">
+
+            <a href="{% url 'organizations:members' %}"
+               class="flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md transition-all group">
+              <div class="w-9 h-9 bg-blue-100 dark:bg-blue-950 rounded-xl flex items-center justify-center mb-3">
+                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="#3b82f6" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                </svg>
+              </div>
+              <p class="font-semibold text-sm text-slate-900 dark:text-slate-100 mb-0.5 group-hover:text-primary-700 dark:group-hover:text-primary-400">Invite teammates</p>
+              <p class="text-xs text-slate-500">Add members to your org</p>
+            </a>
+
+            <a href="{% url 'billing:pricing' %}"
+               class="flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md transition-all group">
+              <div class="w-9 h-9 bg-emerald-100 dark:bg-emerald-950 rounded-xl flex items-center justify-center mb-3">
+                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                </svg>
+              </div>
+              <p class="font-semibold text-sm text-slate-900 dark:text-slate-100 mb-0.5 group-hover:text-primary-700 dark:group-hover:text-primary-400">Explore plans</p>
+              <p class="text-xs text-slate-500">Upgrade when you're ready</p>
+            </a>
+
+            <a href="/api/docs/" target="_blank" rel="noopener"
+               class="flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md transition-all group">
+              <div class="w-9 h-9 bg-violet-100 dark:bg-violet-950 rounded-xl flex items-center justify-center mb-3">
+                <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <p class="font-semibold text-sm text-slate-900 dark:text-slate-100 mb-0.5 group-hover:text-primary-700 dark:group-hover:text-primary-400">Explore API</p>
+              <p class="text-xs text-slate-500">Try the Swagger docs</p>
+            </a>
+
+          </div>
+
+          <!-- Go to dashboard -->
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit"
+                    class="inline-flex items-center gap-2 px-8 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-primary-500/30 transition-all hover:shadow-xl hover:-translate-y-0.5 min-h-[52px] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+              Go to dashboard
+              <svg style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </button>
+          </form>
+
+          <p class="text-sm text-slate-400 mt-6">You can update all of this later in <a href="{% url 'organizations:settings' %}" class="text-primary-600 dark:text-primary-400 hover:underline">Organization Settings</a>.</p>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- Footer (non-complete steps) -->
+    {% if step != "complete" %}
+    <div class="py-4 px-8 text-center">
+      <p class="text-xs text-slate-400">All data is encrypted in transit and at rest. <a href="#" class="hover:text-slate-600 underline">Privacy policy</a>.</p>
+    </div>
+    {% endif %}
+
+  </main>
+</div>
+
+</body>
+</html>
